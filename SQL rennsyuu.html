@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL 100問 練習アプリ</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f5f7fa;--card:#fff;--fg:#1c2733;--sub:#5d6b7a;--line:#d7dee6;--acc:#1f6feb;--ok:#1a7f37;--ng:#cf222e;--code:#0f1720;--codefg:#e6edf3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--fg:#e6edf3;--sub:#9aa7b4;--line:#2b3744;--acc:#58a6ff;--ok:#3fb950;--ng:#ff7b72}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--fg:#e6edf3;--sub:#9aa7b4;--line:#2b3744;--acc:#58a6ff;--ok:#3fb950;--ng:#ff7b72}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Arial,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;line-height:1.6}
+main{max-width:none;margin:0 auto;padding:16px 20px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.right{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.gh{font-size:20px;margin:0 0 10px}
+@media (max-width:1199px) and (min-width:861px){.layout{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.right{position:static;max-height:none}}
+.dred{color:#cf222e;font-weight:bold;background:rgba(207,34,46,.12);border-radius:3px}
+#diff{font:17px/1.6 Consolas,Menlo,monospace;white-space:pre-wrap;word-break:break-all;margin-bottom:10px}
+.sw{font-size:14px;cursor:pointer;user-select:none}
+.sw input{width:18px;height:18px;vertical-align:middle}
+.layout.gclosed{grid-template-columns:minmax(0,1fr)}
+.layout.gclosed .right{display:none}
+#sugg{border:1px solid var(--line);border-radius:8px;background:var(--card);margin-top:4px;max-height:260px;overflow:auto}
+.si{padding:6px 12px;cursor:pointer;font:16px Consolas,Menlo,monospace}
+.si.on{background:var(--acc);color:#fff}
+#sugg+.btns{margin-top:56px}
+.si.on .sd{color:#fff}
+.sd{color:var(--sub);font-size:14px;font-family:Arial,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;margin-left:6px}
+h1{font-size:20px;margin:4px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,input{font:18px Arial,sans-serif;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:100%}
+select{flex:1;min-width:200px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0}
+.bar div{height:100%;background:var(--ok);width:0}
+.small{font-size:12px;color:var(--sub)}
+.stage{color:var(--sub);font-size:16px}
+.q{margin:8px 0;font-size:21px;line-height:1.6;font-weight:bold}
+.hint{color:var(--sub);font-size:16px}
+textarea{width:100%;min-height:220px;font:17px/1.6 Consolas,Menlo,monospace;background:var(--code);color:var(--codefg);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+button.b{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer}
+button.p{background:var(--acc);border-color:var(--acc);color:#fff}
+button.t{border-radius:20px;padding:6px 14px;font-size:14px}
+button.t.on{border-color:var(--acc);color:var(--acc);font-weight:bold}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.res{white-space:pre-wrap;font-size:16px;line-height:1.7}
+.ok{color:var(--ok);font-weight:bold}.ng{color:var(--ng)}
+pre{background:var(--code);color:var(--codefg);padding:10px;border-radius:8px;overflow-x:auto;margin:6px 0;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.wrap{overflow-x:auto}
+code{font-family:Consolas,Menlo,monospace;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>SQL 100問 練習アプリ</h1>
+<div class="row">
+
+</div>
+<p class="small" style="margin:6px 0">正解: <span id="cnt">0</span> / 300　<span id="stageCnt"></span></p>
+<div class="bar"><div id="bar"></div></div>
+<p class="small" id="logLine" style="margin:4px 0"></p>
+
+<div class="layout" id="layoutMain"><div class="left">
+<div class="row" style="margin-bottom:10px"><button class="b" id="gToggle">用語集を閉じる</button></div>
+<section id="secQ">
+  <div class="card">
+    <div class="row">
+      <button class="b" id="prev">◀ 前</button>
+      <select id="sel"></select>
+      <button class="b" id="next">次 ▶</button>
+      <input id="goNum" type="number" min="1" max="300" placeholder="番号" style="width:110px"><button class="b" id="goBtn">移動</button>
+      <label class="sw"><input type="checkbox" id="revOnTog"> <span>復習のみ</span></label>
+      <span class="small" id="revCnt"></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="stage" id="stage"></div>
+    <div class="small" id="judge" style="margin-top:4px"></div>
+    <p class="q" id="q"></p>
+    <p class="hint" id="hintTxt"></p>
+  </div>
+  <div class="card" id="ex" style="overflow-x:auto"></div>
+<textarea id="sql" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="ここにSQLを書く(記号は半角で)"></textarea>
+<div id="sugg" style="display:none"></div>
+  <div class="btns">
+    <button class="b" id="run">RUN</button>
+    <button class="b p" id="grade">採点する</button>
+    <button class="b" id="hint">ヒント</button>
+    <button class="b" id="fmt">整形</button>
+    <button class="b" id="ans">解答例を見る</button>
+    <button class="b" id="reset">リセット</button>
+  </div>
+  <div class="row" style="margin:6px 0"><label class="sw"><input type="checkbox" id="redTog" checked> <span id="redLbl">赤色表示: ON</span></label></div>
+<div class="card" id="diff" style="display:none"></div>
+<div class="card res" id="res">SQLを書いて「採点する」を押してください。入力は自動で保存されます。</div>
+  <p class="small">※採点は、まず練習用データで実行した結果が答えと同じかで判定します。実行できない問題(簡易エンジン非対応の関数など)は、句の順番・列名・数字・日付で判定します。最終確認は DuckDB で行ってください。</p>
+<div class="card">
+  <b>進捗のバックアップ</b>
+  <p class="small" style="margin:6px 0">「書き出す」で進捗を文字列にします。全文をコピーして保存しておくと、別のブラウザでも「読み込む」で元に戻せます。</p>
+  <textarea id="bk" style="min-height:120px"></textarea>
+  <div class="btns"><button class="b" id="bkOut">書き出す</button><button class="b" id="bkIn">読み込む</button></div>
+  <div class="small" id="bkMsg"></div>
+</div>
+<div class="card" id="runOut" style="display:none;overflow-x:auto;margin-top:12px"></div>
+</section>
+
+</div>
+<aside class="right">
+  <div class="card">
+    <h2 class="gh">用語集</h2>
+    <input id="gsearch" placeholder="用語を検索" style="width:100%">
+    <div class="wrap" style="margin-top:10px"><table id="gtable"></table></div>
+  </div>
+</aside>
+</div>
+</main>
+
+<script>
+var ST=[[1,"基本のSELECT"],[16,"WHERE(条件で絞る)"],[36,"並べ替えと件数"],[51,"集計とGROUP BY"],[71,"HAVING と CASE"],[81,"日付の扱い"],[91,"サブクエリ・ウィンドウ関数"],[101,"中級"],[201,"上級"]];
+// [問題, ヒント, 解答例]
+var D=[
+["daily_retail_data の全列を表示してください。","SELECT と FROM だけで書けます。","SELECT * FROM daily_retail_data;"],
+["transaction_date 列だけを表示してください。","列名を SELECT の後ろに書きます。","SELECT transaction_date FROM daily_retail_data;"],
+["business_category と daily_revenue の2列を表示してください。","列はカンマで区切ります。","SELECT business_category, daily_revenue FROM daily_retail_data;"],
+["industry_code 列だけを表示してください。","","SELECT industry_code FROM daily_retail_data;"],
+["daily_revenue を5行だけ表示してください。","LIMIT で件数を決めます。","SELECT daily_revenue FROM daily_retail_data LIMIT 5;"],
+["全列を10行だけ表示してください。","第1問の復習です。","SELECT * FROM daily_retail_data LIMIT 10;"],
+["daily_revenue を revenue という別名で表示してください。","AS で別名を付けます。","SELECT daily_revenue AS revenue FROM daily_retail_data;"],
+["transaction_date と、daily_revenue の1.1倍を revenue_with_tax という名前で表示してください。","計算式も SELECT に書けます。","SELECT transaction_date, daily_revenue * 1.1 AS revenue_with_tax FROM daily_retail_data;"],
+["business_category の種類を重複なしで表示してください。","DISTINCT を使います。","SELECT DISTINCT business_category FROM daily_retail_data;"],
+["transaction_date の日付の種類を重複なしで表示してください。","","SELECT DISTINCT transaction_date FROM daily_retail_data;"],
+["industry_code の種類を重複なしで表示してください。","","SELECT DISTINCT industry_code FROM daily_retail_data;"],
+["business_category と industry_code の組み合わせを重複なしで表示してください。","DISTINCT は複数列にも使えます。","SELECT DISTINCT business_category, industry_code FROM daily_retail_data;"],
+["daily_revenue と、その2倍の値(double_revenue)を3行表示してください。","","SELECT daily_revenue, daily_revenue * 2 AS double_revenue FROM daily_retail_data LIMIT 3;"],
+["transaction_date を20行表示してください。","","SELECT transaction_date FROM daily_retail_data LIMIT 20;"],
+["business_category と transaction_date を10行表示してください。","","SELECT business_category, transaction_date FROM daily_retail_data LIMIT 10;"],
+["daily_revenue が 1000 以上の行を全列表示してください。","比較演算子 >= を使います。","SELECT * FROM daily_retail_data WHERE daily_revenue >= 1000;"],
+["daily_revenue が 1000 未満の行を、transaction_date と daily_revenue で表示してください。","","SELECT transaction_date, daily_revenue FROM daily_retail_data WHERE daily_revenue < 1000;"],
+["daily_revenue が 0 の行を全列表示してください。","等しいは = です。","SELECT * FROM daily_retail_data WHERE daily_revenue = 0;"],
+["daily_revenue が 0 ではない行を全列表示してください。","等しくないは <> です。","SELECT * FROM daily_retail_data WHERE daily_revenue <> 0;"],
+["business_category が '食品' の行を全列表示してください。(業種名は実データの値に置き換えてOK)","文字列は半角のシングルクォートで囲みます。","SELECT * FROM daily_retail_data WHERE business_category = '食品';"],
+["transaction_date が 2024-01-01 以降の行を、transaction_date と daily_revenue で表示してください。","日付は DATE '2024-01-01' と書けます。","SELECT transaction_date, daily_revenue FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01';"],
+["2024年の行を全列表示してください。(2024-01-01 以上、2025-01-01 未満)","","SELECT * FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01';"],
+["daily_revenue が 1000 以上 かつ 5000 未満の行を全列表示してください。","AND は両方を満たす行です。","SELECT * FROM daily_retail_data WHERE daily_revenue >= 1000 AND daily_revenue < 5000;"],
+["daily_revenue が 100 未満 または 10000 以上の行を全列表示してください。","OR を使います。","SELECT * FROM daily_retail_data WHERE daily_revenue < 100 OR daily_revenue >= 10000;"],
+["daily_revenue が 1000 以上 2000 以下の行を、BETWEEN を使って全列表示してください。","BETWEEN は両端を含みます。","SELECT * FROM daily_retail_data WHERE daily_revenue BETWEEN 1000 AND 2000;"],
+["business_category が '食品' または '衣料' の行を全列表示してください。","IN を使うと短く書けます。","SELECT * FROM daily_retail_data WHERE business_category IN ('食品', '衣料');"],
+["business_category が '食品' で始まる行を全列表示してください。","LIKE と % を使います。","SELECT * FROM daily_retail_data WHERE business_category LIKE '食品%';"],
+["daily_revenue が NULL(空)ではない行を全列表示してください。","IS NOT NULL を使います。","SELECT * FROM daily_retail_data WHERE daily_revenue IS NOT NULL;"],
+["daily_revenue が NULL(空)の行を全列表示してください。","IS NULL を使います。","SELECT * FROM daily_retail_data WHERE daily_revenue IS NULL;"],
+["2024年3月の行を全列表示してください。","月初から翌月初の手前までを範囲で指定します。","SELECT * FROM daily_retail_data WHERE transaction_date >= DATE '2024-03-01' AND transaction_date < DATE '2024-04-01';"],
+["2024年6月の transaction_date と daily_revenue を表示してください。","","SELECT transaction_date, daily_revenue FROM daily_retail_data WHERE transaction_date >= DATE '2024-06-01' AND transaction_date < DATE '2024-07-01';"],
+["business_category が '食品' でない行を全列表示してください。","NOT を使います。","SELECT * FROM daily_retail_data WHERE NOT business_category = '食品';"],
+["daily_revenue が 1000 以上 かつ business_category が '食品' の行を全列表示してください。","","SELECT * FROM daily_retail_data WHERE daily_revenue >= 1000 AND business_category = '食品';"],
+["daily_revenue が 1000 以上の行を、5行だけ表示してください。","WHERE と LIMIT の組み合わせです。","SELECT * FROM daily_retail_data WHERE daily_revenue >= 1000 LIMIT 5;"],
+["daily_revenue が 1000 以上の行を、daily_revenue の大きい順に全列表示してください。","","SELECT * FROM daily_retail_data WHERE daily_revenue >= 1000 ORDER BY daily_revenue DESC;"],
+["daily_revenue の小さい順に、全列を5行表示してください。","ORDER BY の既定は昇順(ASC)です。","SELECT * FROM daily_retail_data ORDER BY daily_revenue LIMIT 5;"],
+["daily_revenue の大きい順に、全列を5行表示してください。","","SELECT * FROM daily_retail_data ORDER BY daily_revenue DESC LIMIT 5;"],
+["transaction_date の古い順に、全列を10行表示してください。","","SELECT * FROM daily_retail_data ORDER BY transaction_date ASC LIMIT 10;"],
+["transaction_date の新しい順、同じ日付なら daily_revenue の大きい順に、全列を10行表示してください。","並べ替えの列はカンマで複数指定できます。","SELECT * FROM daily_retail_data ORDER BY transaction_date DESC, daily_revenue DESC LIMIT 10;"],
+["business_category の名前順(昇順)に、business_category と daily_revenue を10行表示してください。","","SELECT business_category, daily_revenue FROM daily_retail_data ORDER BY business_category LIMIT 10;"],
+["daily_revenue の大きい順に、6行目から5行を表示してください。(OFFSET を使う)","OFFSET 5 は先頭5行を飛ばします。","SELECT * FROM daily_retail_data ORDER BY daily_revenue DESC LIMIT 5 OFFSET 5;"],
+["transaction_date の新しい順に、transaction_date と business_category を3行表示してください。","","SELECT transaction_date, business_category FROM daily_retail_data ORDER BY transaction_date DESC LIMIT 3;"],
+["2024年の行を、daily_revenue の大きい順に10行表示してください。","WHERE → ORDER BY → LIMIT の順です。","SELECT * FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01' ORDER BY daily_revenue DESC LIMIT 10;"],
+["daily_revenue が 0 の行を、transaction_date の古い順に全列表示してください。","","SELECT * FROM daily_retail_data WHERE daily_revenue = 0 ORDER BY transaction_date ASC;"],
+["business_category の種類を、重複なしで名前順に表示してください。","DISTINCT と ORDER BY の組み合わせです。","SELECT DISTINCT business_category FROM daily_retail_data ORDER BY business_category;"],
+["transaction_date の種類を、重複なしで新しい順に5件表示してください。","","SELECT DISTINCT transaction_date FROM daily_retail_data ORDER BY transaction_date DESC LIMIT 5;"],
+["industry_code の種類を、重複なしで昇順に表示してください。","","SELECT DISTINCT industry_code FROM daily_retail_data ORDER BY industry_code;"],
+["daily_revenue が 1000 以上の行を、次の順番に並べて、先頭5行を表示してください。①まず business_category の名前順(昇順)。②同じ業種の中では daily_revenue の大きい順(降順)。","","SELECT * FROM daily_retail_data WHERE daily_revenue >= 1000 ORDER BY business_category, daily_revenue DESC LIMIT 5;"],
+["transaction_date が 2024-01-01 の行を全列表示してください。","日付リテラルで = を使います。","SELECT * FROM daily_retail_data WHERE transaction_date = DATE '2024-01-01';"],
+["daily_revenue の大きい順に、全列を1行だけ表示してください。(最大値の行)","","SELECT * FROM daily_retail_data ORDER BY daily_revenue DESC LIMIT 1;"],
+["行数を数えて、列名を total_rows として表示してください。","COUNT(*) を使います。","SELECT COUNT(*) AS total_rows FROM daily_retail_data;"],
+["daily_revenue の合計を total_revenue という名前で表示してください。","","SELECT SUM(daily_revenue) AS total_revenue FROM daily_retail_data;"],
+["daily_revenue の平均を avg_revenue という名前で表示してください。","","SELECT AVG(daily_revenue) AS avg_revenue FROM daily_retail_data;"],
+["daily_revenue の最小値と最大値を、min_revenue と max_revenue という名前で表示してください。","","SELECT MIN(daily_revenue) AS min_revenue, MAX(daily_revenue) AS max_revenue FROM daily_retail_data;"],
+["業種の種類数を、重複を除いて business_count という名前で表示してください。","COUNT(DISTINCT 列名) を使います。","SELECT COUNT(DISTINCT business_category) AS business_count FROM daily_retail_data;"],
+["2024年の売上合計を year_total という名前で表示してください。","WHERE と SUM を組み合わせます。","SELECT SUM(daily_revenue) AS year_total FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01';"],
+["業種ごとの行数を表示してください。(business_category と cnt)","GROUP BY で業種ごとにまとめます。","SELECT business_category, COUNT(*) AS cnt FROM daily_retail_data GROUP BY business_category;"],
+["業種ごとの売上合計を表示してください。(business_category と total)","","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category;"],
+["業種ごとの売上平均を avg_revenue という名前で表示してください。","","SELECT business_category, AVG(daily_revenue) AS avg_revenue FROM daily_retail_data GROUP BY business_category;"],
+["業種ごとの売上合計を、合計の大きい順に表示してください。","GROUP BY → ORDER BY の順です。","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category ORDER BY total DESC;"],
+["業種ごとの売上合計を、合計の大きい順に3件表示してください。","","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category ORDER BY total DESC LIMIT 3;"],
+["日付ごとの売上合計を、日付の古い順に表示してください。(transaction_date と total)","","SELECT transaction_date, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY transaction_date ORDER BY transaction_date;"],
+["業種ごと・日付ごとの売上合計を表示してください。(business_category、transaction_date、total)","GROUP BY は複数列にできます。","SELECT business_category, transaction_date, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, transaction_date;"],
+["業種コードごとの行数を表示してください。(industry_code と cnt)","","SELECT industry_code, COUNT(*) AS cnt FROM daily_retail_data GROUP BY industry_code;"],
+["業種ごとの最大売上を max_revenue という名前で表示してください。","","SELECT business_category, MAX(daily_revenue) AS max_revenue FROM daily_retail_data GROUP BY business_category;"],
+["業種ごとの売上の平均を、小数点以下0桁に四捨五入して avg_revenue で表示してください。","ROUND(値, 桁数) を使います。","SELECT business_category, ROUND(AVG(daily_revenue), 0) AS avg_revenue FROM daily_retail_data GROUP BY business_category;"],
+["2024年の業種ごとの売上合計を、合計の大きい順に表示してください。","WHERE → GROUP BY → ORDER BY の順です。","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01' GROUP BY business_category ORDER BY total DESC;"],
+["業種ごとの取引日数(重複なしの日付の数)を表示してください。(business_category と days)","","SELECT business_category, COUNT(DISTINCT transaction_date) AS days FROM daily_retail_data GROUP BY business_category;"],
+["業種コードごとの売上合計と平均を表示してください。(total、avg_revenue)","","SELECT industry_code, SUM(daily_revenue) AS total, AVG(daily_revenue) AS avg_revenue FROM daily_retail_data GROUP BY industry_code;"],
+["業種ごとの売上合計を求め、合計が最も大きい業種を1件だけ表示してください。","","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category ORDER BY total DESC LIMIT 1;"],
+["売上合計が 100000 以上の業種だけを表示してください。(business_category と total)","集計結果の絞り込みは HAVING です。","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category HAVING SUM(daily_revenue) >= 100000;"],
+["行数が 10 件より多い業種だけを表示してください。(business_category と cnt)","","SELECT business_category, COUNT(*) AS cnt FROM daily_retail_data GROUP BY business_category HAVING COUNT(*) > 10;"],
+["平均売上が 1000 以上の業種を、平均の大きい順に表示してください。(avg_revenue)","HAVING と ORDER BY の併用です。","SELECT business_category, AVG(daily_revenue) AS avg_revenue FROM daily_retail_data GROUP BY business_category HAVING AVG(daily_revenue) >= 1000 ORDER BY avg_revenue DESC;"],
+["2024年について、売上合計が 50000 以上の業種を表示してください。(WHERE と HAVING を両方使う)","","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01' GROUP BY business_category HAVING SUM(daily_revenue) >= 50000;"],
+["daily_revenue が 1000 以上の行だけを業種ごとに数え、件数が多い順に表示してください。(cnt)","","SELECT business_category, COUNT(*) AS cnt FROM daily_retail_data WHERE daily_revenue >= 1000 GROUP BY business_category ORDER BY cnt DESC;"],
+["daily_revenue が 1000 以上なら '高'、そうでなければ '低' と表示してください。(daily_revenue と level)","CASE WHEN ... THEN ... ELSE ... END","SELECT daily_revenue, CASE WHEN daily_revenue >= 1000 THEN '高' ELSE '低' END AS level FROM daily_retail_data;"],
+["daily_revenue を 1000未満 '小'、1000以上5000未満 '中'、5000以上 '大' の3段階で表示してください。(level)","CASE は上から順に判定されます。","SELECT daily_revenue, CASE WHEN daily_revenue < 1000 THEN '小' WHEN daily_revenue < 5000 THEN '中' ELSE '大' END AS level FROM daily_retail_data;"],
+["業種ごとに、daily_revenue が 1000 以上の行数(high_cnt)を表示してください。","CASE を SUM の中に入れると、条件付きの件数が数えられます。","SELECT business_category, SUM(CASE WHEN daily_revenue >= 1000 THEN 1 ELSE 0 END) AS high_cnt FROM daily_retail_data GROUP BY business_category;"],
+["daily_revenue が NULL の場合は 0 として、revenue という名前で表示してください。","COALESCE(列, 代わりの値)","SELECT COALESCE(daily_revenue, 0) AS revenue FROM daily_retail_data;"],
+["daily_revenue を整数型(INTEGER)に変換して、revenue_int という名前で表示してください。","CAST(列 AS 型)","SELECT CAST(daily_revenue AS INTEGER) AS revenue_int FROM daily_retail_data;"],
+["transaction_date を '2024-03' の形の年月文字列にして、重複なしで古い順に表示してください。(ym)","STRFTIME(日付, '%Y-%m')","SELECT DISTINCT STRFTIME(transaction_date, '%Y-%m') AS ym FROM daily_retail_data ORDER BY ym;"],
+["transaction_date の年だけを取り出して、重複なしで表示してください。(yr)","EXTRACT(year FROM 日付)","SELECT DISTINCT EXTRACT(year FROM transaction_date) AS yr FROM daily_retail_data;"],
+["transaction_date を月初日に切り捨てて、重複なしで表示してください。(month_start)","DATE_TRUNC('month', 列)","SELECT DISTINCT DATE_TRUNC('month', transaction_date) AS month_start FROM daily_retail_data;"],
+["月ごとの売上合計を、月の古い順に表示してください。(sales_month と total)","SELECT と GROUP BY に同じ式を書きます。","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY sales_month;"],
+["年ごとの売上合計を表示してください。(yr と total、STRFTIME で年を取り出す)","","SELECT STRFTIME(transaction_date, '%Y') AS yr, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY STRFTIME(transaction_date, '%Y') ORDER BY yr;"],
+["月ごとの取引日数(重複なしの日付数)を表示してください。(sales_month と days)","","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, COUNT(DISTINCT transaction_date) AS days FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY sales_month;"],
+["2024年の月ごとの売上合計を、月の古い順に表示してください。","WHERE で年を絞ってから集計します。","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01' GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY sales_month;"],
+["月ごとの売上合計を '2024-03' の形式で、古い順に表示してください。(month と total)","","SELECT STRFTIME(DATE_TRUNC('month', transaction_date), '%Y-%m') AS month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY STRFTIME(DATE_TRUNC('month', transaction_date), '%Y-%m') ORDER BY month;"],
+["月ごとの1日あたりの平均売上を計算してください。(売上合計 ÷ 取引日数。sales_month と avg_daily)","SUM と COUNT(DISTINCT) を使います。","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) / COUNT(DISTINCT transaction_date) AS avg_daily FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY sales_month;"],
+["2024年で、行数が 100 行以上の月だけを表示してください。(sales_month と cnt)","WHERE → GROUP BY → HAVING の順です。","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, COUNT(*) AS cnt FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01' GROUP BY DATE_TRUNC('month', transaction_date) HAVING COUNT(*) >= 100 ORDER BY sales_month;"],
+["daily_revenue が全体の平均より大きい行を全列表示してください。(サブクエリを使う)","WHERE の中に SELECT を入れられます。","SELECT * FROM daily_retail_data WHERE daily_revenue > (SELECT AVG(daily_revenue) FROM daily_retail_data);"],
+["業種ごとの平均売上が、全体の平均売上より大きい業種を、business_category と avg_revenue で表示してください。","HAVING の中にもサブクエリを書けます。","SELECT business_category, AVG(daily_revenue) AS avg_revenue FROM daily_retail_data GROUP BY business_category HAVING AVG(daily_revenue) > (SELECT AVG(daily_revenue) FROM daily_retail_data);"],
+["WITH を使って業種ごとの売上合計(total)を作り、合計が 100000 以上の業種を表示してください。","WITH 名前 AS (...) SELECT ... の形です。","WITH totals AS (SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category) SELECT business_category, total FROM totals WHERE total >= 100000;"],
+["月ごとの売上合計と、前月からの差額(diff)を表示してください。(sales_month、total、diff)","LAG(列) OVER (ORDER BY 列) で前の行の値を取れます。月次集計は WITH で作ると書きやすいです。","WITH monthly AS (SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date)) SELECT sales_month, total, total - LAG(total) OVER (ORDER BY sales_month) AS diff FROM monthly ORDER BY sales_month;"],
+["業種ごとの売上合計に、売上の大きい順の順位(rank_no)を付けてください。(business_category、total、rank_no)","RANK() OVER (ORDER BY 列 DESC)","WITH totals AS (SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category) SELECT business_category, total, RANK() OVER (ORDER BY total DESC) AS rank_no FROM totals;"],
+["日付の古い順に、売上の累計(running_total)を表示してください。(transaction_date、daily_revenue、running_total)","SUM(列) OVER (ORDER BY 列)","SELECT transaction_date, daily_revenue, SUM(daily_revenue) OVER (ORDER BY transaction_date) AS running_total FROM daily_retail_data ORDER BY transaction_date;"],
+["業種ごとに、daily_revenue が大きい順の番号(row_no)を付けてください。(business_category、daily_revenue、row_no)","ROW_NUMBER() OVER (PARTITION BY 列 ORDER BY 列 DESC)","SELECT business_category, daily_revenue, ROW_NUMBER() OVER (PARTITION BY business_category ORDER BY daily_revenue DESC) AS row_no FROM daily_retail_data;"],
+["業種ごとに daily_revenue が最大の1行を表示してください。(business_category、transaction_date、daily_revenue)","ウィンドウ関数の結果は WITH で作ってから絞ると書けます。","WITH ranked AS (SELECT business_category, transaction_date, daily_revenue, ROW_NUMBER() OVER (PARTITION BY business_category ORDER BY daily_revenue DESC) AS row_no FROM daily_retail_data) SELECT business_category, transaction_date, daily_revenue FROM ranked WHERE row_no = 1;"],
+["月ごとの売上合計を求め、前月比の増減率(%)を表示してください。(sales_month、total、mom_pct。最初の月は NULL でOK)","これまでの総仕上げです。100.0 * (今月 - 前月) / 前月 で計算します。","WITH monthly AS (SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date)) SELECT sales_month, total, ROUND(100.0 * (total - LAG(total) OVER (ORDER BY sales_month)) / NULLIF(LAG(total) OVER (ORDER BY sales_month), 0), 2) AS mom_pct FROM monthly ORDER BY sales_month;"],
+["daily_revenue が 0 より大きい行を、transaction_date の古い順に3行表示してください。(全列)","WHERE で条件を書き、ORDER BY と LIMIT を続けます。","SELECT * FROM daily_retail_data WHERE daily_revenue > 0 ORDER BY transaction_date LIMIT 3;"],
+["業種ごとの売上合計と、全体に占める割合(%)を表示してください。割合の大きい順に並べます。(business_category、total、share_pct)","分母は、サブクエリで全体の合計を求めます。","SELECT business_category, SUM(daily_revenue) AS total, ROUND(100.0 * SUM(daily_revenue) / (SELECT SUM(daily_revenue) FROM daily_retail_data), 2) AS share_pct FROM daily_retail_data GROUP BY business_category ORDER BY share_pct DESC;"],
+["月ごとの売上合計が、全期間の月平均より大きい月だけを表示してください。(sales_month、total)","月次集計を WITH で作り、WHERE でサブクエリの平均と比べます。","WITH monthly AS (SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date)) SELECT sales_month, total FROM monthly WHERE total > (SELECT AVG(total) FROM monthly) ORDER BY sales_month;"],
+["業種ごとの1日あたりの平均売上が最も高い業種を1件表示してください。(business_category、avg_daily)","","SELECT business_category, AVG(daily_revenue) AS avg_daily FROM daily_retail_data GROUP BY business_category ORDER BY avg_daily DESC LIMIT 1;"],
+["日付ごとの売上合計を求め、売上が多い上位5日を表示してください。(transaction_date、total)","","SELECT transaction_date, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY transaction_date ORDER BY total DESC LIMIT 5;"],
+["業種ごと・月ごとの売上合計を表示してください。並び順は、業種名の順、同じ業種なら月の古い順です。(business_category、sales_month、total)","GROUP BY に2つの列(または式)を書きます。","SELECT business_category, DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, DATE_TRUNC('month', transaction_date) ORDER BY business_category, sales_month;"],
+["売上が NULL の行は 0 として扱い、業種ごとの合計を表示してください。(business_category、total)","COALESCE(列, 0) を SUM の中に入れます。","SELECT business_category, SUM(COALESCE(daily_revenue, 0)) AS total FROM daily_retail_data GROUP BY business_category;"],
+["業種ごとに、売上が 1000 以上だった日数と、取引があった日数の合計を表示してください。(business_category、high_days、all_days)","CASE で条件に合う日付だけを数えます。","SELECT business_category, COUNT(DISTINCT CASE WHEN daily_revenue >= 1000 THEN transaction_date END) AS high_days, COUNT(DISTINCT transaction_date) AS all_days FROM daily_retail_data GROUP BY business_category;"],
+["業種が4種類すべてある日だけを表示してください。(transaction_date、categories)","HAVING で、業種数(重複なし)が 4 の日を絞ります。","SELECT transaction_date, COUNT(DISTINCT business_category) AS categories FROM daily_retail_data GROUP BY transaction_date HAVING COUNT(DISTINCT business_category) = 4 ORDER BY transaction_date;"],
+["業種ごとに、最も新しい取引日の行だけを表示してください。(business_category、transaction_date、daily_revenue)","ROW_NUMBER() で、業種ごとに日付の降順の番号を付けます。","WITH ranked AS (SELECT business_category, transaction_date, daily_revenue, ROW_NUMBER() OVER (PARTITION BY business_category ORDER BY transaction_date DESC) AS rn FROM daily_retail_data) SELECT business_category, transaction_date, daily_revenue FROM ranked WHERE rn = 1;"],
+["業種ごとに、前の取引日からの売上の増減(差)を表示してください。(business_category、transaction_date、diff)","LAG を PARTITION BY 付きで使います。","SELECT business_category, transaction_date, daily_revenue - LAG(daily_revenue) OVER (PARTITION BY business_category ORDER BY transaction_date) AS diff FROM daily_retail_data ORDER BY business_category, transaction_date;"],
+["月ごとの売上合計と、当月を含む3か月移動平均を表示してください。(sales_month、total、moving_avg3)","ROWS BETWEEN 2 PRECEDING AND CURRENT ROW を使います。","WITH monthly AS (SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date)) SELECT sales_month, total, AVG(total) OVER (ORDER BY sales_month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg3 FROM monthly ORDER BY sales_month;"],
+["業種ごとの売上の累計を、日付の古い順に表示してください。(business_category、transaction_date、running_total)","SUM(...) OVER (PARTITION BY ... ORDER BY ...) を使います。","SELECT business_category, transaction_date, SUM(daily_revenue) OVER (PARTITION BY business_category ORDER BY transaction_date) AS running_total FROM daily_retail_data ORDER BY business_category, transaction_date;"],
+["2024年の業種ごとの売上合計と、売上順位(1位が最大)を表示してください。(business_category、total、rank_no)","WITH で合計を作ってから RANK() を付けます。","WITH totals AS (SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE transaction_date >= DATE '2024-01-01' AND transaction_date < DATE '2025-01-01' GROUP BY business_category) SELECT business_category, total, RANK() OVER (ORDER BY total DESC) AS rank_no FROM totals ORDER BY rank_no;"],
+["業種ごとに、月別の売上が最も多かった月を1行ずつ表示してください。(business_category、sales_month、total)","2段階の WITH で、月次集計 → 業種内の順位の順に作ります。","WITH monthly AS (SELECT business_category, DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, DATE_TRUNC('month', transaction_date)), ranked AS (SELECT business_category, sales_month, total, ROW_NUMBER() OVER (PARTITION BY business_category ORDER BY total DESC) AS rn FROM monthly) SELECT business_category, sales_month, total FROM ranked WHERE rn = 1 ORDER BY business_category;"],
+["売上が全体の平均より大きい行の件数を、業種ごとに表示してください。(business_category、above_cnt)","WHERE にサブクエリを書きます。","SELECT business_category, COUNT(*) AS above_cnt FROM daily_retail_data WHERE daily_revenue > (SELECT AVG(daily_revenue) FROM daily_retail_data) GROUP BY business_category;"],
+["業種ごとの最初の取引日を表示してください。(business_category、first_date)","","SELECT business_category, MIN(transaction_date) AS first_date FROM daily_retail_data GROUP BY business_category ORDER BY business_category;"],
+["月ごとに、取引のあった業種数(重複なし)と売上合計を表示してください。(sales_month、categories、total)","","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, COUNT(DISTINCT business_category) AS categories, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY sales_month;"],
+["業種ごとの売上合計を、業種コードの順に並べ、同じ業種コードの中では合計の多い順に表示してください。(industry_code、business_category、total)","","SELECT industry_code, business_category, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY industry_code, business_category ORDER BY industry_code, total DESC;"],
+["業種ごとに、売上の上位3件の合計を表示してください。(business_category、top3_total)","ROW_NUMBER() で業種ごとの順位を付けてから、3位まで合計します。","WITH ranked AS (SELECT business_category, daily_revenue, ROW_NUMBER() OVER (PARTITION BY business_category ORDER BY daily_revenue DESC) AS rn FROM daily_retail_data) SELECT business_category, SUM(daily_revenue) AS top3_total FROM ranked WHERE rn <= 3 GROUP BY business_category ORDER BY business_category;"],
+["業種ごとに、売上が 1000 以上の行の割合(%)を表示してください。(business_category、ratio_pct)","割合は 100.0 * 件数 / 全件数 です。CASE で1と0に変換して合計すると書けます。","SELECT business_category, ROUND(100.0 * SUM(CASE WHEN daily_revenue >= 1000 THEN 1 ELSE 0 END) / COUNT(*), 2) AS ratio_pct FROM daily_retail_data GROUP BY business_category ORDER BY business_category;"]
+];
+(function(){
+var CATS=["食品","衣料","日用品","家電"],CODES=["F01","C02","D03","E04"];
+function R(n){var a=[];for(var i=1;i<=n;i++)a.push(i);return a}
+function pad(n){return String(n).padStart(2,"0")}
+function ms(m){return "2024-"+pad(m)+"-01"}
+function me(m){return m>=12?"2025-01-01":"2024-"+pad(m+1)+"-01"}
+function rng(a,b){return "transaction_date >= DATE '"+ms(a)+"' AND transaction_date < DATE '"+me(b)+"'"}
+var MX="WITH monthly AS (SELECT business_category, DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, DATE_TRUNC('month', transaction_date))";
+var AGG=[["SUM(daily_revenue)","売上合計","total"],["AVG(daily_revenue)","平均売上","avg_val"],["COUNT(*)","取引件数","cnt"]];
+var CL=[["transaction_date, business_category, daily_revenue","transaction_date、business_category、daily_revenue"],["business_category, daily_revenue","business_category、daily_revenue"],["transaction_date, industry_code, daily_revenue","transaction_date、industry_code、daily_revenue"]];
+var I=[],A=[];
+
+/* ---- 中級(生成分) ---- */
+R(12).forEach(function(m){AGG.forEach(function(g){I.push(["2024年"+m+"月の業種ごとの"+g[1]+"を、"+g[1]+"の大きい順に表示してください。(business_category、"+g[2]+")","","SELECT business_category, "+g[0]+" AS "+g[2]+" FROM daily_retail_data WHERE "+rng(m,m)+" GROUP BY business_category ORDER BY "+g[2]+" DESC;"])})});
+[500,1000,2000,3000,5000,8000].forEach(function(t){[10,20,30].forEach(function(n){I.push(["daily_revenue が "+t+" 以上の行数を業種ごとに数え、件数が "+n+" 件以上の業種だけを表示してください。(business_category、cnt)","HAVING で件数を絞ります。","SELECT business_category, COUNT(*) AS cnt FROM daily_retail_data WHERE daily_revenue >= "+t+" GROUP BY business_category HAVING COUNT(*) >= "+n+";"])})});
+[3,5,7,10,15,20].forEach(function(n){CL.forEach(function(c){I.push(["daily_revenue の大きい順に、"+c[1]+"を"+n+"行表示してください。","","SELECT "+c[0]+" FROM daily_retail_data ORDER BY daily_revenue DESC LIMIT "+n+";"])})});
+[3,5,7,10,14].forEach(function(k){I.push(["業種ごとに、当日を含む直近"+k+"日の平均売上(移動平均)を、日付順に表示してください。(business_category、transaction_date、ma)","ROWS BETWEEN を使います。","SELECT business_category, transaction_date, AVG(daily_revenue) OVER (PARTITION BY business_category ORDER BY transaction_date ROWS BETWEEN "+(k-1)+" PRECEDING AND CURRENT ROW) AS ma FROM daily_retail_data ORDER BY business_category, transaction_date;"])});
+[1,2,3,4].forEach(function(q){I.push(["2024年第"+q+"四半期の業種ごとの売上の累計を、日付順に表示してください。(business_category、transaction_date、running_total)","","SELECT business_category, transaction_date, SUM(daily_revenue) OVER (PARTITION BY business_category ORDER BY transaction_date) AS running_total FROM daily_retail_data WHERE "+rng((q-1)*3+1,q*3)+" ORDER BY business_category, transaction_date;"])});
+[20,22,24,26,28,30].forEach(function(d){I.push(["取引日数(重複なしの日付数)が "+d+" 日以上の月を表示してください。(sales_month、days)","","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, COUNT(DISTINCT transaction_date) AS days FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date) HAVING COUNT(DISTINCT transaction_date) >= "+d+" ORDER BY sales_month;"])});
+[0,1,2].forEach(function(dec){[["AVG","平均売上"],["MAX","最大売上"],["MIN","最小売上"]].forEach(function(f){I.push(["業種ごとの"+f[1]+"を、小数点以下"+dec+"桁に四捨五入して表示してください。(business_category、val)","ROUND(値, 桁数)","SELECT business_category, ROUND("+f[0]+"(daily_revenue), "+dec+") AS val FROM daily_retail_data GROUP BY business_category ORDER BY business_category;"])})});
+I.push(["曜日ごと(EXTRACT(dow)、0が日曜)の売上合計を表示してください。(dow、total)","","SELECT EXTRACT(dow FROM transaction_date) AS dow, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY EXTRACT(dow FROM transaction_date) ORDER BY dow;"]);
+[[1,3],[4,6],[7,9],[10,12],[1,6],[7,12]].forEach(function(p){[["SUM(daily_revenue)","売上合計"],["COUNT(*)","件数"]].forEach(function(g){I.push(["2024年"+p[0]+"月から"+p[1]+"月までの業種ごとの"+g[1]+"を表示してください。(business_category、val)","","SELECT business_category, "+g[0]+" AS val FROM daily_retail_data WHERE "+rng(p[0],p[1])+" GROUP BY business_category ORDER BY business_category;"])})});
+[[1000,2000],[2000,3000],[3000,4000],[4000,5000],[5000,6000],[6000,7000],[7000,8000],[8000,9000],[1000,3000],[3000,5000],[5000,7000],[7000,9000]].forEach(function(p){I.push(["売上が "+p[0]+" 以上 "+p[1]+" 未満の行数を業種ごとに表示してください。(business_category、cnt)","CASE で条件に合う行を1、それ以外を0にして合計します。","SELECT business_category, SUM(CASE WHEN daily_revenue >= "+p[0]+" AND daily_revenue < "+p[1]+" THEN 1 ELSE 0 END) AS cnt FROM daily_retail_data GROUP BY business_category ORDER BY business_category;"])});
+R(12).forEach(function(n){I.push(["売上合計の多い上位"+n+"か月を表示してください。(sales_month、total)","","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY total DESC LIMIT "+n+";"])});
+[500,1000,1500,2000,2500,3000,3500,4000,4500,5000].forEach(function(t){I.push(["業種ごとの平均売上が "+t+" 以上の業種を表示してください。(business_category、avg_rev)","","SELECT business_category, AVG(daily_revenue) AS avg_rev FROM daily_retail_data GROUP BY business_category HAVING AVG(daily_revenue) >= "+t+";"])});
+[1,2,3,4].forEach(function(q){[["SUM(daily_revenue)","売上合計"],["COUNT(*)","件数"]].forEach(function(g){I.push(["2024年第"+q+"四半期の業種コードごとの"+g[1]+"を表示してください。(industry_code、val)","","SELECT industry_code, "+g[0]+" AS val FROM daily_retail_data WHERE "+rng((q-1)*3+1,q*3)+" GROUP BY industry_code ORDER BY industry_code;"])})});
+[1000,2000,3000,4000,5000,6000,7000].forEach(function(t){I.push(["売上が "+t+" を超える行数を、月ごとに表示してください。(sales_month、cnt)","","SELECT DATE_TRUNC('month', transaction_date) AS sales_month, COUNT(*) AS cnt FROM daily_retail_data WHERE daily_revenue > "+t+" GROUP BY DATE_TRUNC('month', transaction_date) ORDER BY sales_month;"])});
+R(12).forEach(function(m){I.push(["2024年"+m+"月の業種ごとの最大売上を表示してください。(business_category、max_rev)","","SELECT business_category, MAX(daily_revenue) AS max_rev FROM daily_retail_data WHERE "+rng(m,m)+" GROUP BY business_category ORDER BY business_category;"])});
+CODES.forEach(function(c){AGG.forEach(function(g){I.push(["業種コード "+c+" の"+g[1]+"を表示してください。(val)","","SELECT "+g[0]+" AS val FROM daily_retail_data WHERE industry_code = '"+c+"';"])})});
+
+/* ---- 上級(生成) ---- */
+var BASE1=MX+", withprev AS (SELECT business_category, sales_month, total, LAG(total) OVER (PARTITION BY business_category ORDER BY sales_month) AS prev FROM monthly)";
+["-10","-20","0","5","10","20","30","40","50","60"].forEach(function(t){
+  A.push(["前月比が "+t+" % 以上の、業種ごと・月ごとの行を表示してください。(business_category、sales_month、mom_pct)","withprev で前月の売上を取り、増減率を計算します。",BASE1+" SELECT business_category, sales_month, ROUND(100.0 * (total - prev) / prev, 2) AS mom_pct FROM withprev WHERE 100.0 * (total - prev) / prev >= "+t+" ORDER BY business_category, sales_month;"]);
+  A.push(["前月比が "+t+" % 以上の行を、増加率の大きい順に表示してください。(business_category、sales_month、mom_pct)","","WITH monthly AS (SELECT business_category, DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, DATE_TRUNC('month', transaction_date)), withprev AS (SELECT business_category, sales_month, total, LAG(total) OVER (PARTITION BY business_category ORDER BY sales_month) AS prev FROM monthly) SELECT business_category, sales_month, ROUND(100.0 * (total - prev) / prev, 2) AS mom_pct FROM withprev WHERE 100.0 * (total - prev) / prev >= "+t+" ORDER BY mom_pct DESC;"]);
+});
+R(5).forEach(function(k){
+  ["ROW_NUMBER","DENSE_RANK"].forEach(function(fn){
+    var lab=fn==="ROW_NUMBER"?"上位"+k+"件":"同順位を含めて上位"+k+"位まで";
+    A.push(["業種ごとに、月次売上の"+lab+"を表示してください。(business_category、sales_month、total)","","WITH monthly AS (SELECT business_category, DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, DATE_TRUNC('month', transaction_date)), ranked AS (SELECT business_category, sales_month, total, "+fn+"() OVER (PARTITION BY business_category ORDER BY total DESC) AS rn FROM monthly) SELECT business_category, sales_month, total FROM ranked WHERE rn <= "+k+" ORDER BY business_category, total DESC;"]);
+  });
+});
+R(12).forEach(function(m){A.push(["2024年"+m+"月について、業種ごとの売上が月全体に占める割合(%)を表示してください。(business_category、share_pct)","分母は、同じ月の全体の合計(サブクエリ)です。","SELECT business_category, ROUND(100.0 * SUM(daily_revenue) / (SELECT SUM(daily_revenue) FROM daily_retail_data WHERE "+rng(m,m)+"), 2) AS share_pct FROM daily_retail_data WHERE "+rng(m,m)+" GROUP BY business_category ORDER BY business_category;"])});
+[3,5,7,10,14].forEach(function(k){[0,1,2,3].forEach(function(c){A.push([CATS[c]+"の、直近"+k+"日(当日を含む)の売上合計を、日付順に表示してください。(transaction_date、rolling_sum)","","SELECT transaction_date, SUM(daily_revenue) OVER (ORDER BY transaction_date ROWS BETWEEN "+(k-1)+" PRECEDING AND CURRENT ROW) AS rolling_sum FROM daily_retail_data WHERE business_category = '"+CATS[c]+"' ORDER BY transaction_date;"])})});
+[2,3,4,5].forEach(function(k){
+  A.push(["業種ごとに売上を"+k+"段階に分け、段階番号(bucket)を付けてください。(business_category、daily_revenue、bucket)","","SELECT business_category, daily_revenue, NTILE("+k+") OVER (PARTITION BY business_category ORDER BY daily_revenue) AS bucket FROM daily_retail_data WHERE daily_revenue IS NOT NULL;"]);
+  A.push(["全体の売上を"+k+"段階に分け、段階番号(bucket)を付けてください。(business_category、daily_revenue、bucket)","","SELECT business_category, daily_revenue, NTILE("+k+") OVER (ORDER BY daily_revenue) AS bucket FROM daily_retail_data WHERE daily_revenue IS NOT NULL;"]);
+});
+[1,2,3,4].forEach(function(q){[["最初","ASC"],["最後","DESC"]].forEach(function(d){A.push(["2024年第"+q+"四半期の業種ごとに、"+d[0]+"の取引日の行を表示してください。(business_category、transaction_date、daily_revenue)","","WITH qd AS (SELECT business_category, transaction_date, daily_revenue, ROW_NUMBER() OVER (PARTITION BY business_category ORDER BY transaction_date "+d[1]+") AS rn FROM daily_retail_data WHERE "+rng((q-1)*3+1,q*3)+") SELECT business_category, transaction_date, daily_revenue FROM qd WHERE rn = 1 ORDER BY business_category;"])})});
+["1.0","1.1","1.2","1.3","1.5"].forEach(function(mm){[["COUNT(*)","件数"],["SUM(daily_revenue)","売上合計"]].forEach(function(e){A.push(["業種ごとに、売上が業種の平均の"+mm+"倍以上の行の"+e[1]+"を表示してください。(business_category、val)","","WITH catavg AS (SELECT business_category, daily_revenue, AVG(daily_revenue) OVER (PARTITION BY business_category) AS cat_avg FROM daily_retail_data) SELECT business_category, "+e[0]+" AS val FROM catavg WHERE daily_revenue >= cat_avg * "+mm+" GROUP BY business_category ORDER BY business_category;"])})});
+[[1,3],[4,6],[7,9],[10,12],[1,6],[7,12],[1,12],[3,8],[2,11],[5,10]].forEach(function(p){A.push(["2024年"+p[0]+"月から"+p[1]+"月の中で、月ごとに売上が最も多い業種を表示してください。(sales_month、business_category、total)","","WITH mt AS (SELECT DATE_TRUNC('month', transaction_date) AS sales_month, business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE "+rng(p[0],p[1])+" GROUP BY DATE_TRUNC('month', transaction_date), business_category), rk AS (SELECT sales_month, business_category, total, ROW_NUMBER() OVER (PARTITION BY sales_month ORDER BY total DESC) AS rn FROM mt) SELECT sales_month, business_category, total FROM rk WHERE rn = 1 ORDER BY sales_month;"])});
+[2,3,4,6].forEach(function(w){
+  A.push(["2024年の月次売上について、直近"+w+"か月の合計(当月を含む)を表示してください。(sales_month、total、rolling_total)","","WITH monthly AS (SELECT DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY DATE_TRUNC('month', transaction_date)) SELECT sales_month, total, SUM(total) OVER (ORDER BY sales_month ROWS BETWEEN "+(w-1)+" PRECEDING AND CURRENT ROW) AS rolling_total FROM monthly ORDER BY sales_month;"]);
+  A.push(["業種ごとに、月次売上の直近"+w+"か月の合計を表示してください。(business_category、sales_month、rolling_total)","","WITH monthly AS (SELECT business_category, DATE_TRUNC('month', transaction_date) AS sales_month, SUM(daily_revenue) AS total FROM daily_retail_data GROUP BY business_category, DATE_TRUNC('month', transaction_date)) SELECT business_category, sales_month, SUM(total) OVER (PARTITION BY business_category ORDER BY sales_month ROWS BETWEEN "+(w-1)+" PRECEDING AND CURRENT ROW) AS rolling_total FROM monthly ORDER BY business_category, sales_month;"]);
+});
+["0.5","0.8","0.9","0.95","0.99"].forEach(function(p){[">=","<="].forEach(function(op){A.push(["業種ごとの売上のパーセンタイル順位(PERCENT_RANK)が "+p+(op===">="?" 以上":" 以下")+" の行を表示してください。(business_category、transaction_date、daily_revenue)","","WITH pr AS (SELECT business_category, transaction_date, daily_revenue, PERCENT_RANK() OVER (PARTITION BY business_category ORDER BY daily_revenue) AS pct FROM daily_retail_data WHERE daily_revenue IS NOT NULL) SELECT business_category, transaction_date, daily_revenue FROM pr WHERE pct "+op+" "+p+" ORDER BY business_category, transaction_date;"])})});
+[1,2,3,4].forEach(function(q){[["MAX","最大値","running_max"],["MIN","最小値","running_min"]].forEach(function(f){A.push(["2024年第"+q+"四半期について、業種ごとの売上の"+f[1]+"の推移(累計)を日付順に表示してください。(business_category、transaction_date、daily_revenue、"+f[2]+")","","SELECT business_category, transaction_date, daily_revenue, "+f[0]+"(daily_revenue) OVER (PARTITION BY business_category ORDER BY transaction_date) AS "+f[2]+" FROM daily_retail_data WHERE "+rng((q-1)*3+1,q*3)+" ORDER BY business_category, transaction_date;"])})});
+R(12).forEach(function(m){A.push(["2024年"+m+"月について、業種ごとの売上合計を、列(food、apparel、daily、appliance)に並べて1行で表示してください。","CASE で業種ごとの列を作ります。","SELECT SUM(CASE WHEN business_category = '"+CATS[0]+"' THEN daily_revenue ELSE 0 END) AS food, SUM(CASE WHEN business_category = '"+CATS[1]+"' THEN daily_revenue ELSE 0 END) AS apparel, SUM(CASE WHEN business_category = '"+CATS[2]+"' THEN daily_revenue ELSE 0 END) AS daily, SUM(CASE WHEN business_category = '"+CATS[3]+"' THEN daily_revenue ELSE 0 END) AS appliance FROM daily_retail_data WHERE "+rng(m,m)+";"])});
+R(12).forEach(function(m){[1,2,3].forEach(function(n){A.push(["2024年"+m+"月の売上合計の上位"+n+"業種を表示してください。(business_category、total、rk)","","WITH t AS (SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE "+rng(m,m)+" GROUP BY business_category), r AS (SELECT business_category, total, RANK() OVER (ORDER BY total DESC) AS rk FROM t) SELECT business_category, total, rk FROM r WHERE rk <= "+n+" ORDER BY rk;"])})});
+R(12).forEach(function(m){[1000,3000,5000].forEach(function(t){A.push(["2024年"+m+"月の業種ごとに、売上が "+t+" 以上の行の割合(%)を表示してください。(business_category、ratio_pct)","","SELECT business_category, ROUND(100.0 * SUM(CASE WHEN daily_revenue >= "+t+" THEN 1 ELSE 0 END) / COUNT(*), 2) AS ratio_pct FROM daily_retail_data WHERE "+rng(m,m)+" GROUP BY business_category ORDER BY business_category;"])})});
+CODES.forEach(function(c){R(12).forEach(function(m){A.push(["2024年"+m+"月の業種コード "+c+" の売上合計を表示してください。(total)","","SELECT SUM(daily_revenue) AS total FROM daily_retail_data WHERE industry_code = '"+c+"' AND "+rng(m,m)+";"])})});
+CATS.forEach(function(cat,c){R(12).forEach(function(m){A.push(["2024年"+m+"月の"+cat+"について、前の取引日より売上が増えた日数を表示してください。(increase_days)","","WITH d AS (SELECT transaction_date, daily_revenue, LAG(daily_revenue) OVER (ORDER BY transaction_date) AS prev FROM daily_retail_data WHERE business_category = '"+cat+"') SELECT COUNT(*) AS increase_days FROM d WHERE "+rng(m,m)+" AND daily_revenue > prev;"])})});
+
+function shuf(arr){var s=12345;for(var i=arr.length-1;i>0;i--){s=(s*16807)%2147483647;var j=s%(i+1),t=arr[i];arr[i]=arr[j];arr[j]=t}return arr}
+var N=[];
+CATS.forEach(function(c){
+  N.push(["業種が「"+c+"」の行だけを、日付の新しい順に5行表示してください。(transaction_date、daily_revenue)","WHERE で業種を絞り込みます。","SELECT transaction_date, daily_revenue FROM daily_retail_data WHERE business_category = '"+c+"' ORDER BY transaction_date DESC LIMIT 5;"]);
+  N.push(["業種が「"+c+"」の行を除いて、売上の大きい順に5行表示してください。(business_category、daily_revenue)","<> で除外します。","SELECT business_category, daily_revenue FROM daily_retail_data WHERE business_category <> '"+c+"' ORDER BY daily_revenue DESC LIMIT 5;"]);
+});
+[["食品","衣料"],["日用品","家電"]].forEach(function(p){
+  N.push(["業種が「"+p[0]+"」または「"+p[1]+"」の行だけを、売上の大きい順に5行表示してください。(business_category、daily_revenue)","IN (値1, 値2) を使います。","SELECT business_category, daily_revenue FROM daily_retail_data WHERE business_category IN ('"+p[0]+"', '"+p[1]+"') ORDER BY daily_revenue DESC LIMIT 5;"]);
+  N.push(["業種が「"+p[0]+"」と「"+p[1]+"」以外の行を、売上の大きい順に5行表示してください。(business_category、daily_revenue)","NOT IN で除外します。","SELECT business_category, daily_revenue FROM daily_retail_data WHERE business_category NOT IN ('"+p[0]+"', '"+p[1]+"') ORDER BY daily_revenue DESC LIMIT 5;"]);
+});
+N.push(["業種コードが F01 の行だけを、全列で5行表示してください。","","SELECT * FROM daily_retail_data WHERE industry_code = 'F01' LIMIT 5;"]);
+N.push(["業種コードが C02 と D03 の行だけを、全列で5行表示してください。","","SELECT * FROM daily_retail_data WHERE industry_code IN ('C02', 'D03') LIMIT 5;"]);
+N.push(["業種コードが E04 の行を除いて、全列で5行表示してください。","","SELECT * FROM daily_retail_data WHERE industry_code <> 'E04' LIMIT 5;"]);
+N.push(["業種コードが F01 の行を除いて、業種ごとの売上合計を表示してください。(business_category、total)","","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE industry_code <> 'F01' GROUP BY business_category ORDER BY business_category;"]);
+[1,6,12].forEach(function(m){N.push(["2024年"+m+"月の行を除いて、業種ごとの売上合計を表示してください。(business_category、total)","NOT で月の範囲を除外します。","SELECT business_category, SUM(daily_revenue) AS total FROM daily_retail_data WHERE NOT ("+rng(m,m)+") GROUP BY business_category ORDER BY business_category;"])});
+N.push(["transaction_date 以外の列を表示してください。(5行)","表示したい列だけを指定します。","SELECT business_category, daily_revenue, industry_code FROM daily_retail_data LIMIT 5;"]);
+N.push(["daily_revenue 以外の列を表示してください。(5行)","","SELECT transaction_date, business_category, industry_code FROM daily_retail_data LIMIT 5;"]);
+N.push(["daily_revenue が NULL ではなく、かつ 0 でもない行を、全列で5行表示してください。","AND と <> を組み合わせます。","SELECT * FROM daily_retail_data WHERE daily_revenue IS NOT NULL AND daily_revenue <> 0 LIMIT 5;"]);
+N.forEach(function(x){D.push(x)});
+shuf(I).slice(0,100-20-N.length).forEach(function(x){D.push(x)});
+shuf(A).slice(0,100).forEach(function(x){D.push(x)});
+})();
+var G=[
+["TABLE","行と列で表した、データを入れる表。","daily_retail_data"],
+["ROW","テーブルの1件分のデータ。","1日・1業種の売上1件"],
+["COLUMN","テーブルの項目。同じ種類のデータが縦に並ぶ。","daily_revenue"],
+["QUERY","データベースに対する命令文(問い合わせ)。","SELECT * FROM daily_retail_data;"],
+["SELECT","取り出す列を指定する。","SELECT business_category"],
+["FROM","対象のテーブルを指定する。","FROM daily_retail_data"],
+["WHERE","行を条件で絞り込む(集計の前)。","WHERE daily_revenue >= 1000"],
+["= <> < > <= >=","=、<>、<、>、<=、>= など。","daily_revenue < 1000"],
+["AND / OR / NOT","条件の組み合わせ。AND は両方、OR はどちらか、NOT は否定。","A AND B"],
+["BETWEEN","範囲の指定(両端を含む)。","BETWEEN 1000 AND 2000"],
+["IN","いずれかの値に一致するかを判定する。","IN ('食品', '衣料')"],
+["LIKE","パターン一致。% は任意の文字列、_ は1文字。","LIKE '食品%'"],
+["NULL","値がないこと。= ではなく IS NULL で判定する。","IS NULL / IS NOT NULL"],
+["DISTINCT","重複を取り除く。","SELECT DISTINCT business_category"],
+["ORDER BY","結果を並べ替える。ASC は昇順、DESC は降順。","ORDER BY total DESC"],
+["LIMIT / OFFSET","取得する件数と、飛ばす件数。","LIMIT 5 OFFSET 5"],
+["COUNT / SUM / AVG / MIN / MAX","複数行をまとめて1つの値にする。COUNT、SUM、AVG、MIN、MAX など。","SUM(daily_revenue)"],
+["GROUP BY","同じ値の行をまとめる(集計と一緒に使う)。","GROUP BY business_category"],
+["HAVING","集計した後の結果を絞り込む(WHEREは集計前)。","HAVING SUM(daily_revenue) >= 100000"],
+["CASE","条件によって値を変える(IF のような式)。","CASE WHEN x > 0 THEN '正' ELSE '負' END"],
+["AS","列や式に別の名前を付ける。","SUM(daily_revenue) AS total"],
+["(SELECT ...)","クエリの中に入れる別のクエリ。","WHERE x > (SELECT AVG(x) FROM t)"],
+["WITH","途中結果に名前を付けて、段階的に書く。","WITH t AS (SELECT ...) SELECT * FROM t"],
+["OVER","行をグループに分けずに、前後の行や順位を使って計算する。OVER を付ける。","LAG(total) OVER (ORDER BY 月)"],
+["PARTITION BY","ウィンドウ関数で、グループごとに計算を分ける。","OVER (PARTITION BY business_category)"],
+["LAG / RANK / ROW_NUMBER","前の行の値 / 順位(同順位あり) / 行番号。","RANK() OVER (ORDER BY total DESC)"],
+["JOIN","複数のテーブルを、共通の列で結合する。","FROM a JOIN b ON a.id = b.id"],
+["DATE / INTEGER / VARCHAR","列に入るデータの種類。DATE(日付)、INTEGER(整数)、VARCHAR(文字列)など。","CAST(x AS INTEGER)"],
+["CAST","値の型を変換する。","CAST(daily_revenue AS INTEGER)"],
+["COALESCE","最初の NULL ではない値を返す。NULL の代わりの値に使う。","COALESCE(daily_revenue, 0)"],
+["DATE_TRUNC","日付を指定した単位(月など)に切り捨てる。","DATE_TRUNC('month', transaction_date)"],
+["STRFTIME","日付を書式に従って文字列にする。","STRFTIME(transaction_date, '%Y-%m')"],
+["DATE '...'","SQL で日付を書く形式。","DATE '2024-01-01'"],
+["'...'","SQL で文字列を書く形式。半角のシングルクォートで囲む。","'食品'"],
+[";","文の終わりを示す。","SELECT * FROM t;"]
+];
+
+var cur=0,S={},ok=0,showG=false;
+try{S=JSON.parse(localStorage.getItem("sql100")||"{}")}catch(e){S={}}
+function save(){try{localStorage.setItem("sql100",JSON.stringify(S))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function stageOf(i){var r=ST[0];ST.forEach(function(s){if(i+1>=s[0])r=s});return r}
+var KW="SELECT FROM WHERE GROUP BY ORDER HAVING LIMIT OFFSET AS AND OR NOT IN LIKE IS NULL BETWEEN DISTINCT CASE WHEN THEN ELSE END CAST COUNT SUM AVG MIN MAX ROUND COALESCE DATE DESC ASC OVER PARTITION WITH INTEGER STRFTIME EXTRACT DATE_TRUNC LAG RANK ROW_NUMBER NULLIF YEAR MONTH BY".split(" ");
+function stripStr(s){return s.replace(/'[^']*'/g,"''")}
+function seqOf(s){var u=stripStr(s).replace(/EXTRACT\s*\(\s*\w+\s+FROM\s+/gi,"EXTRACT(").replace(/\s+/g," ").toUpperCase();return (u.match(/\b(WITH|SELECT|FROM|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|OFFSET)\b/g)||[])}
+function escRe(x){return x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}
+function idsOf(ref){
+  var s=stripStr(ref),cte={};
+  (s.match(/(?:WITH|,)\s+\w+\s+AS\s*\(/gi)||[]).forEach(function(m){cte[m.replace(/^(WITH|,)\s+/i,"").replace(/\s+AS.*$/i,"").toLowerCase()]=1});
+  s=s.replace(/\bAS\s+\w+/gi," ");
+  var out={};(s.match(/[A-Za-z_][A-Za-z_0-9]*/g)||[]).forEach(function(x){var l=x.toLowerCase();if(KW.indexOf(x.toUpperCase())<0&&!cte[l])out[l]=1});
+  return Object.keys(out);
+}
+function numsOf(ref){var o={};(stripStr(ref).match(/\b\d+(?:\.\d+)?\b/g)||[]).forEach(function(n){o[n]=1});return Object.keys(o)}
+function freshTable(){
+  setupDB();
+  alasql.tables.daily_retail_data.data=SAMPLE.map(function(r){return Object.assign({},r)});
+}
+function runOn(sql){
+  freshTable();
+  var res=alasql(sql.replace(/DATE\s+'/gi,"'").replace(/;\s*$/,""));
+  if(!Array.isArray(res))throw new Error("not a query");
+  return res;
+}
+function sameResult(a,b,ordered){
+  function norm(rows){return rows.map(function(r){return Object.keys(r).map(function(k){var v=r[k];return typeof v==="number"?Math.round(v*1e6)/1e6:v})})}
+  var A=norm(a),B=norm(b);
+  if(A.length!==B.length)return false;
+  if(ordered)return JSON.stringify(A)===JSON.stringify(B);
+  A=A.map(function(x){return JSON.stringify(x)}).sort();
+  B=B.map(function(x){return JSON.stringify(x)}).sort();
+  return JSON.stringify(A)===JSON.stringify(B);
+}
+function segSets(sql){
+  var s=stripStr(sql).replace(/EXTRACT\s*\(\s*\w+\s+FROM\s+/gi,"EXTRACT(").replace(/\s+/g," ").toUpperCase();
+  s=s.replace(/(WITH|,)\s+[A-Z_0-9]+\s+AS\s*\(/g,"$1 (").replace(/\bAS\s+[A-Z_0-9]+/g," ");
+  var parts=s.split(/\b(WITH|SELECT|FROM|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|OFFSET)\b/),out=[];
+  for(var i=1;i<parts.length;i+=2){
+    var ids=(parts[i+1]||"").match(/[A-Z_][A-Z_0-9]*/g)||[];
+    ids=ids.filter(function(x){return KW.indexOf(x)<0}).filter(function(x,k,a){return a.indexOf(x)===k}).sort();
+    out.push(parts[i]+":"+ids.join(","));
+  }
+  return out;
+}
+function grade(raw,ref){
+  window.__lastCmp=null;
+  var fw=raw.match(/[\u3001\u3002\uFF0C\uFF1B\uFF08\uFF09\u3000\uFF0A\uFF1D\uFF1C\uFF1E]/g);
+  if(fw)return {fw:Array.from(new Set(fw)).join(" ")};
+  if(/\bSELECT\s*(DISTINCT\s*)?(FROM|WHERE|GROUP|ORDER|LIMIT|;|$)/i.test(stripStr(raw).replace(/\s+/g," ").trim()))
+    return {msgs:["SELECT の後ろに、取り出す列(全列なら *)を書いてください。例: SELECT * FROM daily_retail_data;"]};
+  try{MiniSQL.run(raw.replace(/;\s*$/,""),SAMPLE)}
+  catch(e){if(e.syntax)return {msgs:["SQLの文として読めません("+e.message.replace("構文エラー: ","")+")。説明の文字や余分な文字が入っていないか確認してください。"]}}
+  var TB="DAILY_RETAIL_DATA",COLS=["TRANSACTION_DATE","BUSINESS_CATEGORY","DAILY_REVENUE","INDUSTRY_CODE"],sm=[];
+  segSets(raw).forEach(function(seg){
+    var p=seg.split(":"),k=p[0],ids=p[1]?p[1].split(","):[];
+    if(k==="SELECT"&&ids.indexOf(TB)>=0)sm.push("「SELECT」の部分にテーブル名(daily_retail_data)を書いています。SELECT には列を書き、テーブル名は FROM に書きます。");
+    if(k==="FROM"&&ids.some(function(x){return COLS.indexOf(x)>=0}))sm.push("「FROM」の部分に列名を書いています。FROM にはテーブル名(daily_retail_data)を書きます。");
+  });
+  if(sm.length)return {msgs:sm};
+  if(true){
+    var expect=null,got=null;
+    try{expect=runOn(ref)}catch(e){expect=null}
+    if(expect){
+      try{got=runOn(raw)}catch(e){got=null}
+      if(got){
+        if(sameResult(got,expect,/order\s+by/i.test(ref)))return {msgs:[]};
+        window.__lastCmp={got:got.slice(0,3),expect:expect.slice(0,3),gc:got.length,ec:expect.length};return {msgs:["結果が答えと一致しません(行数: あなた "+got.length+" 行 / 答え "+expect.length+" 行)。条件、列、並び順を確認してください。"]};
+      }
+    }
+  }
+  var msgs=[],us=stripStr(raw);
+  var su=seqOf(raw),sr=seqOf(ref);
+  if(su.join(" ")!==sr.join(" "))msgs.push("句の構成・順番が違います。期待: "+sr.join(" → ")+" / あなた: "+(su.join(" → ")||"なし"));
+  var gs=segSets(ref),uss=segSets(raw);
+  if(gs.length===uss.length){
+    gs.forEach(function(g,k){
+      var ga=g.split(":"),ua=uss[k].split(":");
+      if(ga[1]===ua[1])return;
+      if(ga[1]==="")return;
+      msgs.push("「"+ga[0]+"」の部分の列名・テーブル名が違います(期待: "+ga[1].toLowerCase()+" / あなた: "+(ua[1].toLowerCase()||"なし")+")");
+    });
+  }else{
+    idsOf(ref).forEach(function(id){if(!new RegExp("\\b"+escRe(id)+"\\b","i").test(us))msgs.push("「"+id+"」(列名・テーブル名)が見当たりません")});
+  }
+  numsOf(ref).forEach(function(n){if(!new RegExp("(^|[^\\d.])"+escRe(n)+"(?!\\d)").test(us))msgs.push("数字 "+n+" が見当たりません")});
+  (ref.match(/\d{4}-\d{2}-\d{2}/g)||[]).forEach(function(d){if(raw.indexOf(d)<0)msgs.push("日付 "+d+" が見当たりません")});
+  return {msgs:msgs};
+}
+function updCount(){var n=0;Object.keys(S).forEach(function(k){if(S[k]&&S[k].ok)n++});ok=n;$("cnt").textContent=n;$("bar").style.width=n+"%"}
+function fillSel(){var h="";D.forEach(function(_,i){h+='<option value="'+i+'">'+(S[i]&&S[i].ok?"✓ ":"")+(i+1<10?"0":"")+(i+1)+". "+esc(stageOf(i)[1])+"</option>"});$("sel").innerHTML=h;$("sel").value=cur}
+function show(i){
+  if(i<0)i=0;if(i>=D.length)i=D.length-1;
+  cur=i;var st=stageOf(i);
+  $("stage").textContent="第"+(i+1)+"問 / "+st[1];
+  $("q").innerHTML=esc(D[i][0])+'<br><span class="small" style="font-size:15px">使うテーブル: <b>daily_retail_data</b>(列: transaction_date / business_category / daily_revenue / industry_code)</span>';
+  $("hintTxt").textContent="";
+  $("sql").value=(S[i]&&S[i].sql)||"";
+  lastRaw="";$("diff").style.display="none";$("runOut").style.display="none";suggList=[];drawSugg();
+  showExample(i);
+  $("res").textContent="SQLを書いて「採点する」を押してください。";
+  fillSel();updCount();
+}
+$("sel").onchange=function(){show(+this.value)};
+$("prev").onclick=function(){show(cur-1)};
+$("next").onclick=function(){show(cur+1)};
+$("sql").oninput=function(){S[cur]=S[cur]||{};S[cur].sql=this.value;save()};
+var KEYS="SELECT FROM WHERE GROUP BY HAVING ORDER BY LIMIT OFFSET DISTINCT AS AND OR NOT IN LIKE IS NULL BETWEEN CASE WHEN THEN ELSE END CAST COALESCE NULLIF ROUND COUNT SUM AVG MIN MAX DATE DATE_TRUNC STRFTIME EXTRACT LAG LEAD RANK ROW_NUMBER OVER PARTITION WITH ASC DESC INTEGER VARCHAR UNION ALL JOIN ON LEFT INNER SUBSTRING UPPER LOWER LENGTH".split(" ");
+var WORDS=KEYS.concat(["daily_retail_data","transaction_date","business_category","daily_revenue","industry_code"]);
+var INFO={
+"SELECT":"句|取り出す列を指定する","FROM":"句|データを取り出す表を指定する","WHERE":"句|行を条件で絞り込む(集計の前)","GROUP BY":"句|同じ値の行をまとめて集計する","HAVING":"句|集計後の結果を絞り込む","ORDER BY":"句|結果の並び順を決める","LIMIT":"句|取得する行数を制限する","OFFSET":"句|先頭から指定行数を飛ばす","DISTINCT":"修飾|重複を取り除く","AS":"句|列や式に別名を付ける","AND":"演算子|両方の条件を満たす","OR":"演算子|どちらかの条件を満たす","NOT":"演算子|条件を否定する","IN":"演算子|いずれかの値に一致するか","LIKE":"演算子|パターンに一致するか(%は任意の文字列)","IS":"演算子|NULLかどうかを判定する(IS NULL)","NULL":"値|値がないこと","BETWEEN":"演算子|範囲内か(両端を含む)","CASE":"式|条件によって値を変える","WHEN":"式の一部|条件を書く(CASE内)","THEN":"式の一部|条件が真のときの値(CASE内)","ELSE":"式の一部|どの条件にも当てはまらないときの値(CASE内)","END":"式の一部|CASEを終える","CAST":"関数|値の型を変換する","COALESCE":"関数|最初のNULLでない値を返す","NULLIF":"関数|2つの値が同じならNULLを返す","ROUND":"関数|指定した桁数に四捨五入する","COUNT":"集計関数|件数を数える","SUM":"集計関数|合計を求める","AVG":"集計関数|平均を求める","MIN":"集計関数|最小値を求める","MAX":"集計関数|最大値を求める","DATE":"型|日付の型(DATE '2024-01-01' の形で書く)","DATE_TRUNC":"関数|日付を指定単位(月など)に切り捨てる","STRFTIME":"関数|日付を書式に従って文字列にする","EXTRACT":"関数|日付から年・月・日などを取り出す","LAG":"関数(ウィンドウ)|前の行の値を取得する","LEAD":"関数(ウィンドウ)|次の行の値を取得する","RANK":"関数(ウィンドウ)|順位を付ける(同順位あり)","ROW_NUMBER":"関数(ウィンドウ)|行番号を付ける","OVER":"句(ウィンドウ)|ウィンドウ関数の計算範囲を指定する","PARTITION":"句(ウィンドウ)|グループごとに計算を分ける(PARTITION BY)","WITH":"句|一時的な名前付きクエリ(CTE)を作る","ASC":"修飾|昇順(小さい順)","DESC":"修飾|降順(大きい順)","INTEGER":"型|整数","VARCHAR":"型|文字列","UNION":"演算子|2つの結果を縦に結合する","ALL":"修飾|重複も残す(UNION ALL)","JOIN":"句|複数のテーブルを結合する","ON":"句|JOINの結合条件","LEFT":"修飾|左側の行を全部残す(LEFT JOIN)","INNER":"修飾|両方に一致する行だけ(INNER JOIN)","SUBSTRING":"関数|文字列の一部を取り出す","UPPER":"関数|大文字に変換する","LOWER":"関数|小文字に変換する","LENGTH":"関数|文字数を返す",
+"daily_retail_data":"テーブル|日次の小売売上データの表","transaction_date":"列|取引日(日付)","business_category":"列|業種","daily_revenue":"列|売上金額","industry_code":"列|業種コード"
+};
+var suggList=[],suggIdx=0;
+function curWord(){
+  var ta=$("sql"),p=ta.selectionStart,m=ta.value.slice(0,p).match(/[A-Za-z_][A-Za-z_0-9]*$/);
+  return m?{w:m[0],start:p-m[0].length}:null;
+}
+function drawSugg(){
+  var box=$("sugg");
+  if(!suggList.length){box.style.display="none";box.innerHTML="";return}
+  box.style.display="";
+  box.innerHTML=suggList.map(function(s,i){
+    var p=(INFO[s]||"|").split("|");
+    return '<div class="si'+(i===suggIdx?' on':'')+'" data-i="'+i+'"><b>'+esc(s)+'</b> <span class="sd">['+esc(p[0])+'] '+esc(p[1])+'</span></div>';
+  }).join("");
+  Array.prototype.forEach.call(box.children,function(el){el.onmousedown=function(e){e.preventDefault();acceptSugg(+el.getAttribute("data-i"))}});
+}
+function updSugg(){
+  var cw=curWord();suggList=[];suggIdx=0;
+  if(cw){var lw=cw.w.toLowerCase();suggList=WORDS.filter(function(x){var l=x.toLowerCase();return l.indexOf(lw)===0&&l!==lw}).slice(0,8)}
+  drawSugg();
+}
+function acceptSugg(i){
+  var cw=curWord(),ta=$("sql");
+  if(!cw||!suggList[i])return;
+  var v=ta.value,p=ta.selectionStart,ins=suggList[i];
+  ta.value=v.slice(0,cw.start)+ins+v.slice(p);
+  ta.selectionStart=ta.selectionEnd=cw.start+ins.length;
+  S[cur]=S[cur]||{};S[cur].sql=ta.value;save();
+  suggList=[];drawSugg();ta.focus();
+}
+$("sql").addEventListener("input",updSugg);
+$("sql").addEventListener("click",updSugg);
+$("sql").addEventListener("blur",function(){setTimeout(function(){suggList=[];drawSugg()},150)});
+$("sql").addEventListener("keydown",function(e){
+  var open=suggList.length>0;
+  if(open&&e.key==="ArrowDown"){e.preventDefault();suggIdx=(suggIdx+1)%suggList.length;drawSugg();return}
+  if(open&&e.key==="ArrowUp"){e.preventDefault();suggIdx=(suggIdx-1+suggList.length)%suggList.length;drawSugg();return}
+  if(open&&(e.key==="Enter"||e.key==="Tab")){e.preventDefault();acceptSugg(suggIdx);return}
+  if(open&&e.key==="Escape"){e.preventDefault();suggList=[];drawSugg();return}
+  if(e.key==="Tab"){e.preventDefault();var s=this.selectionStart;this.value=this.value.slice(0,s)+"  "+this.value.slice(this.selectionEnd);this.selectionStart=this.selectionEnd=s+2}
+});
+$("grade").onclick=function(){
+  var raw=$("sql").value;
+  if(!raw.trim()){$("res").textContent="SQLが空です。";return}
+  S[cur]=S[cur]||{};S[cur].sql=raw;
+  var r=grade(raw,D[cur][2]);
+  renderDiff(raw,D[cur][2]);
+  if(r.fw){S[cur].ok=false;$("res").innerHTML='<span class="ng">全角の記号が含まれています: '+esc(r.fw)+'</span>\nSQLでは半角の , ; ( ) と半角スペースを使います。';save();return}
+  if(r.msgs.length){S[cur].ok=false;$("res").innerHTML='<span class="ng">惜しい!直す点:</span>\n・'+r.msgs.map(esc).join("\n・")}
+  else{S[cur].ok=true;$("res").innerHTML='<span class="ok">正解です ✅</span>\n'+(cur<D.length-1?"次の問題に進みましょう。":"100問クリアです。お疲れさまでした!")+'\n実際に DuckDB で実行して、結果も確認してみてください。'}
+  save();fillSel();updCount();
+};
+$("hint").onclick=function(){$("res").textContent="ヒント: "+(D[cur][1]||"特になし。問題文をよく読んでみてください。")};
+$("ans").onclick=function(){$("res").innerHTML="解答例:<pre>"+esc(D[cur][2])+"</pre>まず自分で書いてから見比べるのがおすすめです。"};
+$("reset").onclick=function(){S[cur]={};save();show(cur)};
+function drawG(){
+  var q=($("gsearch").value||"").toLowerCase(),h="<tr><th>コード</th><th>意味</th><th>例</th></tr>";
+  G.forEach(function(g){if(!q||(g[0]+g[1]+g[2]).toLowerCase().indexOf(q)>=0)h+="<tr><td><b>"+esc(g[0])+"</b></td><td>"+esc(g[1])+"</td><td><code>"+esc(g[2])+"</code></td></tr>"});
+  $("gtable").innerHTML=h;
+}
+$("gsearch").oninput=drawG;
+
+drawG();
+var lastRaw="",lastRef="";
+function tok(s){return s.match(/\s+|'[^']*'|[A-Za-z_][A-Za-z_0-9]*|\d+(?:\.\d+)?|[\s\S]/g)||[]}
+function keyOf(t){if(t.charAt(0)==="'")return "'S'";if(/^[A-Za-z_]/.test(t))return t.toUpperCase();return t}
+function lcsMark(a,b){
+  var n=a.length,m=b.length,dp=[],i,j,mk=new Array(n).fill(false);
+  for(i=0;i<=n;i++)dp.push(new Array(m+1).fill(0));
+  for(i=n-1;i>=0;i--)for(j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  i=0;j=0;
+  while(i<n&&j<m){if(a[i]===b[j]){mk[i]=true;i++;j++}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++}
+  return mk;
+}
+function renderDiff(raw,ref){lastRaw=raw;lastRef=ref;drawDiff()}
+function drawDiff(){
+  if(!lastRaw){$("diff").style.display="none";return}
+  var toks=tok(lastRaw),ua=[],idx=[];
+  toks.forEach(function(t,k){if(!/^\s+$/.test(t)){ua.push(keyOf(t));idx.push(k)}});
+  var rt=tok(lastRef).filter(function(t){return !/^\s+$/.test(t)}).map(keyOf);
+  var mk=lcsMark(ua,rt),bad={};
+  idx.forEach(function(k,p){if(!mk[p])bad[k]=1});
+  var on=$("redTog").checked,h="";
+  toks.forEach(function(t,k){var e=esc(t);h+=(on&&bad[k])?'<span class="dred">'+e+'</span>':e});
+  $("diff").innerHTML=h;$("diff").style.display="";
+  $("redLbl").textContent=on?"赤色表示: ON":"赤色表示: OFF";
+}
+var SAMPLE=(function(){
+  var rows=[],seed=7;
+  function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+  var cats=[["食品","F01"],["衣料","C02"],["日用品","D03"],["家電","E04"]];
+  for(var d=new Date(2024,0,1);d<new Date(2025,0,1);d.setDate(d.getDate()+1)){
+    var ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    cats.forEach(function(c,ci){
+      if(rnd()<0.85)rows.push({transaction_date:ds,business_category:c[0],daily_revenue:rnd()<0.01?null:Math.round(500+rnd()*9000+ci*800),industry_code:c[1]});
+    });
+  }
+  return rows;
+})();
+var dbReady=false;
+function setupDB(){
+  if(dbReady)return;
+  alasql("CREATE TABLE daily_retail_data (transaction_date STRING, business_category STRING, daily_revenue NUMBER, industry_code STRING)");
+  alasql.tables.daily_retail_data.data=SAMPLE;
+  dbReady=true;
+}
+function renderTable(rows){
+  var n=rows.length;
+  if(!n)return '<span class="small">結果は0件です。</span>';
+  var cols=Object.keys(rows[0]);
+  var h='<div class="small">練習用のサンプルデータでの結果です(実際のテーブルとは数値が違います)。結果: '+n+'件'+(n>500?'(先頭500件を表示)':'')+'</div><div class="wrap" style="max-height:400px;overflow:auto"><table><tr>'+cols.map(function(c){return '<th style="position:sticky;top:0;background:var(--card)">'+esc(c)+'</th>'}).join('')+'</tr>';
+  rows.slice(0,500).forEach(function(r){h+='<tr>'+cols.map(function(c){var v=r[c];return '<td>'+esc(v===null||v===undefined?"NULL":v)+'</td>'}).join('')+'</tr>'});
+  return h+'</table></div>';
+}
+function runSQL(){
+  var raw=$("sql").value,box=$("runOut");
+  box.style.display="";
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+  if(!raw.trim()){box.innerHTML="SQLが空です。";return}
+  if(typeof alasql==="undefined"){box.innerHTML='<span class="ng">実行エンジンを読み込めませんでした。ネットワーク環境を確認してください。</span>';return}
+  try{
+    freshTable();
+    var q=raw.replace(/DATE\s+'/gi,"'").replace(/;\s*$/,"");
+    var res=alasql(q);
+    box.innerHTML=Array.isArray(res)?renderTable(res):'<span class="ok">実行できました。</span>';
+  }catch(e){
+    box.innerHTML='<span class="ng">エラー: '+esc(e.message||String(e))+'</span><br><span class="small">この練習用の実行エンジンは簡易版です。DATE_TRUNC・STRFTIME・OVER など一部の関数には対応していません。その場合は DuckDB で確認してください。</span>';
+  }
+}
+function showExample(i){
+  var box=$("ex"),cols=["transaction_date","business_category","daily_revenue","industry_code"];
+  var seed=(i+1)*7919+13,n=SAMPLE.length,picked={},rows=[];
+  function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+  while(rows.length<6){var k=Math.floor(rnd()*n);if(!picked[k]){picked[k]=1;rows.push(SAMPLE[k])}}
+  var h='<div style="font-size:16px;margin-bottom:6px"><b>元の表(daily_retail_data)</b> <span class="small">サンプルデータからランダムに6行(問題ごとに変わります)</span></div><table><tr>'+cols.map(function(c){return '<th>'+c+'</th>'}).join('')+'</tr>';
+  rows.forEach(function(r){h+='<tr>'+cols.map(function(c){var v=r[c];return '<td>'+esc(v===null||v===undefined?"NULL":v)+'</td>'}).join('')+'</tr>'});
+  box.innerHTML=h+'</table>';
+}
+$("run").onclick=runSQL;
+$("redTog").onchange=drawDiff;
+var revOn=false;
+function visList(){return D.map(function(_,i){return i}).filter(function(i){return !revOn||(S[i]&&S[i].miss&&!S[i].ok)})}
+function fillSel(){
+  var L=visList(),h="";
+  L.forEach(function(i){h+='<option value="'+i+'">'+(S[i]&&S[i].ok?"✓ ":"")+(i+1<10?"0":"")+(i+1)+". "+esc(stageOf(i)[1])+"</option>"});
+  if(!L.length)h='<option value="'+cur+'">復習する問題はありません</option>';
+  $("sel").innerHTML=h;
+  $("sel").value=L.indexOf(cur)>=0?cur:(L[0]!==undefined?L[0]:cur);
+  var n=0;D.forEach(function(_,i){if(S[i]&&S[i].miss&&!S[i].ok)n++});
+  $("revCnt").textContent="間違えた問題: "+n+"問";
+}
+function stepTo(d){
+  var L=visList(),t;
+  if(!L.length)return;
+  if(d>0)t=L.find(function(i){return i>cur});
+  else t=L.slice().reverse().find(function(i){return i<cur});
+  if(t!==undefined)show(t);
+}
+$("prev").onclick=function(){stepTo(-1)};
+$("next").onclick=function(){stepTo(1)};
+$("revOnTog").onchange=function(){revOn=this.checked;fillSel()};
+var __grade=$("grade").onclick;
+$("grade").onclick=function(e){
+  __grade.call(this,e);
+  explainWrong();
+  if(S[cur]){
+    if(S[cur].ok)S[cur].miss=false;
+    else if(S[cur].sql)S[cur].miss=true;
+    save();fillSel();
+  }
+};
+var __ans=$("ans").onclick;
+$("ans").onclick=function(e){
+  __ans.call(this,e);
+  S[cur]=S[cur]||{};
+  if(!S[cur].ok)S[cur].miss=true;
+  save();fillSel();
+};
+function cmpTable(rows,label){
+  if(!rows||!rows.length)return '<div class="small" style="margin-top:6px"><b>'+label+'</b>: 0行</div>';
+  var cols=Object.keys(rows[0]);
+  return '<div class="small" style="margin-top:6px"><b>'+label+'</b></div><div class="wrap"><table><tr>'+cols.map(function(c){return '<th>'+esc(c)+'</th>'}).join('')+'</tr>'+rows.map(function(r){return '<tr>'+cols.map(function(c){var v=r[c];return '<td>'+esc(v===null||v===undefined?"NULL":v)+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>';
+}
+function explainWrong(){
+  var box=$("res"),t=box.textContent,add=[];
+  if(t.indexOf("惜しい")<0&&t.indexOf("結果が答えと一致しません")<0)return;
+  if(t.indexOf("句の構成")>=0)add.push("SQLには書く順番があります。SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT の順です。ただし、実行される順番は FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT です。");
+  if(t.indexOf("列名・テーブル名")>=0)add.push("SELECT の後ろには取り出す列、FROM の後ろには取り出すテーブルを書きます。列とテーブルを入れ替えると、別の意味になります。");
+  if(t.indexOf("数字")>=0)add.push("条件の数字(しきい値、件数、日数など)が問題文と違うかもしれません。問題文の数字をもう一度確認してください。");
+  if(t.indexOf("日付")>=0)add.push("日付は DATE '2024-01-01' のように、問題で指定された期間と同じ範囲で書きます。");
+  if(t.indexOf("結果が答えと一致しません")>=0)add.push("実行結果が答えと違います。下の表で、答えとあなたの結果の最初の数行を比べてみてください。WHERE(絞り込み)、GROUP BY(まとめ方)、ORDER BY(並び順)のどれかが違うことが多いです。");
+  if(!add.length)return;
+  var h='<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px"><b>なぜ違うか</b><ul style="margin:6px 0 0 18px;padding:0">'+add.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>';
+  var c=window.__lastCmp;
+  if(c)h+='<div class="small" style="margin-top:8px">行数: 答え '+c.ec+' 行 / あなた '+c.gc+' 行(最初の3行ずつ)</div>'+cmpTable(c.expect,"答え")+cmpTable(c.got,"あなた");
+  box.innerHTML+=h+'</div>';
+}
+$("bkOut").onclick=function(){
+  $("bk").value=JSON.stringify(S);
+  $("bkMsg").textContent="書き出しました。文字列を全部コピーして保存してください。";
+};
+$("bkIn").onclick=function(){
+  try{
+    var o=JSON.parse($("bk").value);
+    if(!o||typeof o!=="object"||Array.isArray(o))throw new Error("bad");
+    S=o;save();fillSel();updCount();show(cur);
+    $("bkMsg").textContent="読み込みました。";
+  }catch(e){
+    $("bkMsg").textContent="読み込めませんでした。書き出した文字列を貼り付けてください。";
+  }
+};
+var MiniSQL=(function(){
+var COLS=["transaction_date","business_category","daily_revenue","industry_code"];
+var TABLE="daily_retail_data";
+var KW={};("SELECT DISTINCT FROM WHERE GROUP BY HAVING ORDER LIMIT OFFSET AS AND OR NOT IN IS NULL BETWEEN LIKE CASE WHEN THEN ELSE END CAST ASC DESC DATE OVER WITH JOIN UNION TRUE FALSE").split(" ").forEach(function(k){KW[k]=1});
+var AGG={COUNT:1,SUM:1,AVG:1,MIN:1,MAX:1};
+var WINF={ROW_NUMBER:1,RANK:1,DENSE_RANK:1,LAG:1,LEAD:1,NTILE:1,PERCENT_RANK:1,FIRST_VALUE:1};
+var FN={ROUND:1,COALESCE:1,NULLIF:1,DATE_TRUNC:1,STRFTIME:1,EXTRACT:1,ABS:1,UPPER:1,LOWER:1,LENGTH:1};
+function uns(m){var e=new Error("未対応の書き方です: "+m);e.unsupported=true;return e}
+function syn(m){var e=new Error("構文エラー: "+m);e.syntax=true;return e}
+
+function tokenize(s){
+  var t=[],i=0,n=s.length,m;
+  while(i<n){
+    var c=s.charAt(i);
+    if(/\s/.test(c)){i++;continue}
+    if(c==="-"&&s.charAt(i+1)==="-"){while(i<n&&s.charAt(i)!=="\n")i++;continue}
+    if(c==="'"){var j=s.indexOf("'",i+1);if(j<0)throw syn("文字列が閉じていません");t.push({k:"str",v:s.slice(i+1,j)});i=j+1;continue}
+    if(c==='"'){var j2=s.indexOf('"',i+1);if(j2<0)throw syn("識別子が閉じていません");t.push({k:"id",v:s.slice(i+1,j2)});i=j2+1;continue}
+    if(/[0-9]/.test(c)){m=/^[0-9]+(\.[0-9]+)?/.exec(s.slice(i));t.push({k:"num",v:parseFloat(m[0])});i+=m[0].length;continue}
+    if(/[A-Za-z_\u3040-\u30ff\u3400-\u9fff]/.test(c)){
+      m=/^[A-Za-z_0-9\u3040-\u30ff\u3400-\u9fff]+/.exec(s.slice(i));
+      var w=m[0];i+=w.length;var U=w.toUpperCase();
+      t.push(KW[U]?{k:"kw",v:U}:{k:"id",v:w});continue;
+    }
+    var two=s.substr(i,2);
+    if(two==="<>"||two==="!="||two==="<="||two===">="){t.push({k:"op",v:two==="!="?"<>":two});i+=2;continue}
+    if("=<>+-*/(),;".indexOf(c)>=0){t.push({k:"op",v:c});i++;continue}
+    throw syn("使えない文字 '"+c+"'");
+  }
+  t.push({k:"eof",v:""});
+  return t;
+}
+
+function P(t){this.t=t;this.i=0}
+P.prototype.pk=function(o){return this.t[this.i+(o||0)]};
+P.prototype.kw=function(v,o){var x=this.pk(o);return x.k==="kw"&&x.v===v};
+P.prototype.op=function(v,o){var x=this.pk(o);return x.k==="op"&&x.v===v};
+P.prototype.eatKw=function(v){if(this.kw(v)){this.i++;return true}return false};
+P.prototype.eatOp=function(v){if(this.op(v)){this.i++;return true}return false};
+P.prototype.eatW=function(w){var x=this.pk();if((x.k==="id"||x.k==="kw")&&String(x.v).toUpperCase()===w){this.i++;return true}return false};
+P.prototype.needKw=function(v){if(!this.eatKw(v))throw syn(v+" が必要です")};
+P.prototype.needW=function(w){if(!this.eatW(w))throw syn(w+" が必要です")};
+P.prototype.needOp=function(v){if(!this.eatOp(v))throw syn("「"+v+"」が必要です")};
+P.prototype.ident=function(){var x=this.pk();if(x.k!=="id")throw syn("列名またはテーブル名が必要です");this.i++;return x.v};
+P.prototype.expr=function(){var l=this.and_();while(this.eatKw("OR")){l={op:"OR",a:l,b:this.and_()}}return l};
+P.prototype.and_=function(){var l=this.not_();while(this.eatKw("AND")){l={op:"AND",a:l,b:this.not_()}}return l};
+P.prototype.not_=function(){if(this.eatKw("NOT"))return {op:"NOT",a:this.not_()};return this.cmp()};
+P.prototype.cmp=function(){
+  var l=this.add();
+  var x=this.pk();
+  if(x.k==="op"&&["=","<>","<",">","<=",">="].indexOf(x.v)>=0){this.i++;return {op:"CMP",o:x.v,a:l,b:this.add()}}
+  if(this.eatKw("IS")){var ng=this.eatKw("NOT");this.needKw("NULL");return {op:"ISNULL",a:l,neg:ng}}
+  var neg=false;
+  if(this.kw("NOT")&&(this.kw("IN",1)||this.kw("BETWEEN",1)||this.kw("LIKE",1))){this.i++;neg=true}
+  if(this.eatKw("IN")){
+    this.needOp("(");
+    if(this.kw("SELECT")){var iq=parseSelectP(this);this.needOp(")");return {op:"INSUB",a:l,q:iq,neg:neg}}
+    var list=[this.expr()];while(this.eatOp(","))list.push(this.expr());
+    this.needOp(")");return {op:"IN",a:l,list:list,neg:neg};
+  }
+  if(this.eatKw("BETWEEN")){var lo=this.add();this.needKw("AND");var hi=this.add();return {op:"BETWEEN",a:l,lo:lo,hi:hi,neg:neg}}
+  if(this.eatKw("LIKE")){return {op:"LIKE",a:l,b:this.add(),neg:neg}}
+  return l;
+};
+P.prototype.add=function(){var l=this.mul();while(this.op("+")||this.op("-")){var o=this.t[this.i++].v;l={op:"BIN",o:o,a:l,b:this.mul()}}return l};
+P.prototype.mul=function(){var l=this.unary();while(this.op("*")||this.op("/")){var o=this.t[this.i++].v;l={op:"BIN",o:o,a:l,b:this.unary()}}return l};
+P.prototype.unary=function(){if(this.eatOp("-"))return {op:"NEG",a:this.unary()};if(this.eatOp("+"))return this.unary();return this.prim()};
+P.prototype.prim=function(){
+  var x=this.pk();
+  if(x.k==="num"||x.k==="str"){this.i++;return {op:"LIT",v:x.v}}
+  if(this.eatKw("NULL"))return {op:"LIT",v:null};
+  if(this.eatKw("TRUE"))return {op:"LIT",v:true};
+  if(this.eatKw("FALSE"))return {op:"LIT",v:false};
+  if(this.kw("DATE")&&this.pk(1).k==="str"){this.i+=2;return {op:"LIT",v:this.t[this.i-1].v}}
+  if(this.eatKw("CASE")){
+    var ws=[],els=null;
+    while(this.eatKw("WHEN")){var c=this.expr();this.needKw("THEN");ws.push({c:c,v:this.expr()})}
+    if(!ws.length)throw syn("WHEN が必要です");
+    if(this.eatKw("ELSE"))els=this.expr();
+    this.needKw("END");
+    return {op:"CASE",ws:ws,els:els};
+  }
+  if(this.eatKw("CAST")){
+    this.needOp("(");var e=this.expr();this.needKw("AS");
+    var ty=this.pk();if(ty.k!=="id"&&ty.k!=="kw")throw syn("型名が必要です");this.i++;
+    this.needOp(")");return {op:"CAST",a:e,ty:String(ty.v).toUpperCase()};
+  }
+  if(this.eatOp("(")){
+    if(this.kw("SELECT")){var sq=parseSelectP(this);this.needOp(")");return {op:"SUB",q:sq}}
+    var inner=this.expr();this.needOp(")");return inner;
+  }
+  if(x.k==="id"){this.i++;if(this.eatOp("("))return this.call(x.v.toUpperCase());return {op:"COL",name:x.v}}
+  throw syn("式が正しくありません(「"+(x.v||"")+"」付近)");
+};
+P.prototype.overSpec=function(){
+  this.needOp("(");
+  var part=[],ord=[],frame=null;
+  if(this.eatW("PARTITION")){this.needKw("BY");part.push(this.expr());while(this.eatOp(","))part.push(this.expr())}
+  if(this.eatKw("ORDER")){this.needKw("BY");do{var oe=this.expr(),d=false;if(this.eatKw("DESC"))d=true;else this.eatKw("ASC");ord.push({e:oe,desc:d})}while(this.eatOp(","))}
+  if(this.eatW("RANGE"))throw uns("RANGE フレーム");
+  if(this.eatW("ROWS")){
+    this.needKw("BETWEEN");
+    var n;
+    if(this.eatW("UNBOUNDED")){this.needW("PRECEDING");n=null}
+    else{var nt=this.pk();if(nt.k!=="num")throw syn("ROWS の数字が必要です");this.i++;this.needW("PRECEDING");n=nt.v}
+    this.needKw("AND");this.needW("CURRENT");this.needW("ROW");
+    frame={n:n};
+  }
+  this.needOp(")");
+  return {part:part,ord:ord,frame:frame};
+};
+P.prototype.call=function(name){
+  var args=[],star=false,distinct=false;
+  if(this.eatOp("*")){star=true}
+  else if(!this.op(")")){
+    distinct=this.eatKw("DISTINCT");
+    if(name==="EXTRACT"){
+      var part=this.pk();if(part.k!=="id"&&part.k!=="kw")throw syn("EXTRACT の単位が必要です");this.i++;
+      this.needKw("FROM");var ea=this.expr();this.needOp(")");
+      return {op:"EXTRACT",part:String(part.v).toLowerCase(),a:ea};
+    }
+    args.push(this.expr());while(this.eatOp(","))args.push(this.expr());
+  }
+  this.needOp(")");
+  if(this.eatKw("OVER")){
+    if(!(AGG[name]||WINF[name]))throw uns("ウィンドウ関数 "+name);
+    var sp=this.overSpec();
+    return {op:"WIN",f:name,args:args,star:star,distinct:distinct,part:sp.part,ord:sp.ord,frame:sp.frame};
+  }
+  if(WINF[name])throw syn(name+" には OVER が必要です");
+  if(AGG[name]){
+    if(name==="COUNT"&&star)return {op:"AGG",f:"COUNTALL"};
+    if(args.length!==1)throw syn(name+" の引数は1つです");
+    return {op:"AGG",f:name,a:args[0],distinct:distinct};
+  }
+  if(!FN[name])throw uns("関数 "+name);
+  return {op:"FN",f:name,args:args};
+};
+
+function parseSelectP(p){
+  p.needKw("SELECT");
+  var distinct=p.eatKw("DISTINCT");
+  if(p.kw("FROM"))throw syn("SELECT の後ろに列がありません");
+  var items=[];
+  do{
+    if(p.eatOp("*")){items.push({star:true});continue}
+    var e=p.expr(),alias=null;
+    if(p.eatKw("AS"))alias=p.ident();
+    else if(p.pk().k==="id")alias=p.ident();
+    items.push({e:e,alias:alias});
+  }while(p.eatOp(","));
+  p.needKw("FROM");
+  var from;
+  if(p.eatOp("(")){
+    if(!p.kw("SELECT"))throw syn("FROM の後ろの ( の中は SELECT が必要です");
+    var sub=parseSelectP(p);p.needOp(")");
+    var al=null;if(p.eatKw("AS"))al=p.ident();else if(p.pk().k==="id")al=p.ident();
+    from={sub:sub,alias:al};
+  }else{
+    from={name:p.ident()};
+  }
+  if(p.op(",")||p.kw("JOIN"))throw uns("JOIN や複数テーブル");
+  var where=null,group=[],having=null,order=[],limit=null,offset=0;
+  if(p.eatKw("WHERE"))where=p.expr();
+  if(p.eatKw("GROUP")){p.needKw("BY");group.push(p.expr());while(p.eatOp(","))group.push(p.expr())}
+  if(p.eatKw("HAVING"))having=p.expr();
+  if(p.eatKw("ORDER")){
+    p.needKw("BY");
+    do{var oe2=p.expr(),desc=false;if(p.eatKw("DESC"))desc=true;else p.eatKw("ASC");order.push({e:oe2,desc:desc})}while(p.eatOp(","));
+  }
+  if(p.eatKw("LIMIT")){var L=p.pk();if(L.k!=="num")throw syn("LIMIT の後ろは数字です");p.i++;limit=L.v}
+  if(p.eatKw("OFFSET")){var O=p.pk();if(O.k!=="num")throw syn("OFFSET の後ろは数字です");p.i++;offset=O.v}
+  return {distinct:distinct,items:items,from:from,where:where,group:group,having:having,order:order,limit:limit,offset:offset};
+}
+function parseQuery(sql){
+  var p=new P(tokenize(sql)),ctes=[];
+  if(p.eatKw("WITH")){
+    do{var nm=p.ident();p.needKw("AS");p.needOp("(");var cq=parseSelectP(p);p.needOp(")");ctes.push({name:nm,q:cq})}while(p.eatOp(","));
+  }
+  var main=parseSelectP(p);
+  if(p.kw("UNION"))throw uns("UNION");
+  p.eatOp(";");
+  if(p.pk().k!=="eof")throw syn("余分な文字「"+p.pk().v+"」があります");
+  return {ctes:ctes,main:main};
+}
+
+function kids(e){
+  var r=[];
+  if(e.a)r.push(e.a);if(e.b)r.push(e.b);if(e.lo)r.push(e.lo);if(e.hi)r.push(e.hi);
+  if(e.args)r=r.concat(e.args);if(e.list)r=r.concat(e.list);
+  if(e.part)r=r.concat(e.part);
+  if(e.ord)e.ord.forEach(function(o){r.push(o.e)});
+  if(e.ws)e.ws.forEach(function(w){r.push(w.c,w.v)});
+  if(e.els)r.push(e.els);
+  return r;
+}
+function hasAgg(e){return e.op==="AGG"||(e.op!=="WIN"&&kids(e).some(hasAgg))}
+function hasWin(e){return e.op==="WIN"||kids(e).some(hasWin)}
+function collectWins(e,acc){if(e.op==="WIN"){acc.push(e);return acc}kids(e).forEach(function(k){collectWins(k,acc)});return acc}
+function checkCols(e,names){
+  if(e.op==="COL"&&names.indexOf(e.name)<0)throw new Error("列が見つかりません: "+e.name);
+  kids(e).forEach(function(k){checkCols(k,names)});
+}
+function key(e){return JSON.stringify(e)}
+function roundHalfAway(x,n){var f=Math.pow(10,n||0);var v=Math.abs(x)*f;var r=Math.floor(v+0.5+1e-9);return (x<0?-1:1)*r/f}
+function cmpVal(a,b){return a<b?-1:(a>b?1:0)}
+function aggregateVals(f,vals,distinct){
+  if(distinct){var seen={};vals=vals.filter(function(v){var k=JSON.stringify(v);if(seen[k])return false;seen[k]=1;return true})}
+  if(f==="COUNT")return vals.length;
+  if(!vals.length)return null;
+  if(f==="SUM")return vals.reduce(function(s,v){return s+v},0);
+  if(f==="AVG")return vals.reduce(function(s,v){return s+v},0)/vals.length;
+  if(f==="MIN")return vals.reduce(function(m,v){return cmpVal(v,m)<0?v:m});
+  if(f==="MAX")return vals.reduce(function(m,v){return cmpVal(v,m)>0?v:m});
+  throw uns("集計 "+f);
+}
+function ntile(p,m,k){
+  var size=Math.floor(m/k),extra=m%k;
+  if(size===0)return p+1;
+  var big=(size+1)*extra;
+  if(p<big)return Math.floor(p/(size+1))+1;
+  return extra+Math.floor((p-big)/size)+1;
+}
+var CUR=null;
+function subRun(q){
+  var env=CUR;
+  if(!env.__m)env.__m={};
+  var k=key(q);
+  if(!env.__m[k])env.__m[k]=runQuery(q,env);
+  return env.__m[k];
+}
+function ev(e,row,G){
+  if(G&&G.keys[key(e)])return G.rows.length?ev(e,G.rows[0],null):null;
+  switch(e.op){
+    case "LIT":return e.v;
+    case "COL":
+      if(G)throw new Error("GROUP BY に入っていない列: "+e.name);
+      return row[e.name];
+    case "WIN":
+      if(!row||!row.__w)throw uns("ウィンドウ関数をここでは使えません");
+      return row.__w[key(e)];
+    case "NEG":{var nv=ev(e.a,row,G);return nv==null?null:-nv}
+    case "BIN":{
+      var x=ev(e.a,row,G),y=ev(e.b,row,G);
+      if(x==null||y==null)return null;
+      if(e.o==="+")return x+y;if(e.o==="-")return x-y;if(e.o==="*")return x*y;
+      return y===0?null:x/y;
+    }
+    case "CMP":{
+      var p1=ev(e.a,row,G),p2=ev(e.b,row,G);
+      if(p1==null||p2==null)return null;
+      var c=cmpVal(p1,p2);
+      switch(e.o){case "=":return c===0;case "<>":return c!==0;case "<":return c<0;case ">":return c>0;case "<=":return c<=0;default:return c>=0}
+    }
+    case "AND":{var A1=ev(e.a,row,G),A2=ev(e.b,row,G);if(A1===false||A2===false)return false;if(A1==null||A2==null)return null;return true}
+    case "OR":{var O1=ev(e.a,row,G),O2=ev(e.b,row,G);if(O1===true||O2===true)return true;if(O1==null||O2==null)return null;return false}
+    case "NOT":{var nt=ev(e.a,row,G);return nt==null?null:!nt}
+    case "ISNULL":{var iv=ev(e.a,row,G);var r0=iv==null;return e.neg?!r0:r0}
+    case "IN":{
+      var v=ev(e.a,row,G);if(v==null)return null;
+      var sawNull=false,hit=false;
+      e.list.forEach(function(it){var z=ev(it,row,G);if(z==null)sawNull=true;else if(z===v)hit=true});
+      if(hit)return !e.neg;
+      if(sawNull)return null;
+      return e.neg;
+    }
+    case "INSUB":{
+      var sv=ev(e.a,row,G);if(sv==null)return null;
+      var sr=subRun(e.q),sn=false,sh=false;
+      sr.rows.forEach(function(rw){var z=rw[sr.names[0]];if(z==null)sn=true;else if(z===sv)sh=true});
+      if(sh)return !e.neg;
+      if(sn)return null;
+      return e.neg;
+    }
+    case "SUB":{
+      var rr=subRun(e.q);
+      if(!rr.rows.length)return null;
+      if(rr.rows.length>1)throw new Error("サブクエリが1行より多くの値を返しました");
+      return rr.rows[0][rr.names[0]];
+    }
+    case "BETWEEN":{
+      var bv=ev(e.a,row,G),lo=ev(e.lo,row,G),hi=ev(e.hi,row,G);
+      if(bv==null||lo==null||hi==null)return null;
+      var br=bv>=lo&&bv<=hi;return e.neg?!br:br;
+    }
+    case "LIKE":{
+      var lv=ev(e.a,row,G),pv=ev(e.b,row,G);if(lv==null||pv==null)return null;
+      var re="^"+String(pv).replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/%/g,".*").replace(/_/g,".")+"$";
+      var lr=new RegExp(re).test(String(lv));return e.neg?!lr:lr;
+    }
+    case "CASE":{
+      for(var k=0;k<e.ws.length;k++){if(ev(e.ws[k].c,row,G)===true)return ev(e.ws[k].v,row,G)}
+      return e.els?ev(e.els,row,G):null;
+    }
+    case "CAST":{
+      var cv=ev(e.a,row,G);if(cv==null)return null;
+      if(e.ty==="INTEGER"||e.ty==="INT"||e.ty==="BIGINT")return Math.round(Number(cv));
+      if(e.ty==="DOUBLE"||e.ty==="DECIMAL"||e.ty==="FLOAT"||e.ty==="REAL"||e.ty==="NUMERIC")return Number(cv);
+      if(e.ty==="VARCHAR"||e.ty==="TEXT"||e.ty==="STRING"||e.ty==="DATE")return String(cv);
+      throw uns("CAST の型 "+e.ty);
+    }
+    case "EXTRACT":{
+      var dv=ev(e.a,row,G);if(dv==null)return null;
+      if(e.part==="year")return +dv.slice(0,4);
+      if(e.part==="month")return +dv.slice(5,7);
+      if(e.part==="day")return +dv.slice(8,10);
+      if(e.part==="dow")return new Date(Date.UTC(+dv.slice(0,4),+dv.slice(5,7)-1,+dv.slice(8,10))).getUTCDay();
+      throw uns("EXTRACT の単位 "+e.part);
+    }
+    case "FN":{
+      var av=e.args.map(function(a){return ev(a,row,G)});
+      switch(e.f){
+        case "ROUND":return av[0]==null?null:roundHalfAway(av[0],av.length>1?av[1]:0);
+        case "COALESCE":for(var q=0;q<av.length;q++)if(av[q]!=null)return av[q];return null;
+        case "NULLIF":return av[0]===av[1]?null:av[0];
+        case "ABS":return av[0]==null?null:Math.abs(av[0]);
+        case "UPPER":return av[0]==null?null:String(av[0]).toUpperCase();
+        case "LOWER":return av[0]==null?null:String(av[0]).toLowerCase();
+        case "LENGTH":return av[0]==null?null:String(av[0]).length;
+        case "DATE_TRUNC":{
+          var part=String(av[0]).toLowerCase(),d=av[1];if(d==null)return null;
+          if(part==="month")return d.slice(0,7)+"-01";
+          if(part==="year")return d.slice(0,4)+"-01-01";
+          if(part==="day")return d.slice(0,10);
+          throw uns("DATE_TRUNC の単位 "+part);
+        }
+        case "STRFTIME":{
+          var sd=av[0],fmt=String(av[1]);if(sd==null)return null;
+          return fmt.replace(/%(.)/g,function(_,ch){
+            if(ch==="Y")return sd.slice(0,4);
+            if(ch==="m")return sd.slice(5,7);
+            if(ch==="d")return sd.slice(8,10);
+            if(ch==="%")return "%";
+            throw uns("STRFTIME の書式 %"+ch);
+          });
+        }
+      }
+      throw uns("関数 "+e.f);
+    }
+    case "AGG":{
+      if(!G)throw new Error("集計関数は SELECT・HAVING・ORDER BY で使ってください");
+      if(e.f==="COUNTALL")return G.rows.length;
+      var vals=G.rows.map(function(r){return ev(e.a,r,null)}).filter(function(v){return v!=null});
+      return aggregateVals(e.f,vals,e.distinct);
+    }
+  }
+  throw uns("式 "+e.op);
+}
+
+function computeWin(w,rows){
+  var out=new Array(rows.length);
+  var groups={},gorder=[];
+  rows.forEach(function(r,i){
+    var gk=JSON.stringify(w.part.map(function(p){return ev(p,r,null)}));
+    if(!groups[gk]){groups[gk]=[];gorder.push(gk)}
+    groups[gk].push(i);
+  });
+  gorder.forEach(function(gk){
+    var idx=groups[gk],m=idx.length;
+    var ok=idx.map(function(i){return w.ord.map(function(o){return ev(o.e,rows[i],null)})});
+    var pos=[];for(var j=0;j<m;j++)pos.push(j);
+    pos.sort(function(a,b){
+      for(var t=0;t<w.ord.length;t++){
+        var x=ok[a][t],y=ok[b][t];
+        if(x==null&&y==null)continue;
+        if(x==null)return 1;if(y==null)return -1;
+        var c=cmpVal(x,y);if(c)return w.ord[t].desc?-c:c;
+      }
+      return a-b;
+    });
+    var sorted=pos.map(function(p){return idx[p]});
+    var sk=pos.map(function(p){return ok[p]});
+    var same=function(a,b){
+      for(var t=0;t<w.ord.length;t++){var x=a[t],y=b[t];if(x==null&&y==null)continue;if(x==null||y==null||x!==y)return false}
+      return true;
+    };
+    var pStart=[],pEnd=[],dense=[];
+    for(j=0;j<m;j++){
+      if(j>0&&same(sk[j],sk[j-1])){pStart[j]=pStart[j-1];dense[j]=dense[j-1]}
+      else{pStart[j]=j;dense[j]=(j>0?dense[j-1]:0)+1}
+    }
+    for(j=m-1;j>=0;j--){pEnd[j]=(j<m-1&&same(sk[j],sk[j+1]))?pEnd[j+1]:j}
+    var f=w.f;
+    for(j=0;j<m;j++){
+      var row=rows[sorted[j]],val;
+      if(f==="ROW_NUMBER")val=j+1;
+      else if(f==="RANK")val=pStart[j]+1;
+      else if(f==="DENSE_RANK")val=dense[j];
+      else if(f==="PERCENT_RANK")val=m<=1?0:pStart[j]/(m-1);
+      else if(f==="NTILE")val=ntile(j,m,ev(w.args[0],row,null));
+      else if(f==="LAG"||f==="LEAD"){
+        var off=w.args.length>1?ev(w.args[1],row,null):1;
+        var dflt=w.args.length>2?ev(w.args[2],row,null):null;
+        var t2=f==="LAG"?j-off:j+off;
+        val=(t2>=0&&t2<m)?ev(w.args[0],rows[sorted[t2]],null):dflt;
+      }
+      else if(f==="FIRST_VALUE"){
+        var fs=w.frame?(w.frame.n===null?0:Math.max(0,j-w.frame.n)):0;
+        val=ev(w.args[0],rows[sorted[fs]],null);
+      }
+      else{
+        var st=0,en=m-1;
+        if(w.frame){st=w.frame.n===null?0:Math.max(0,j-w.frame.n);en=j}
+        else if(w.ord.length){st=0;en=pEnd[j]}
+        var vals=[];
+        for(var q2=st;q2<=en;q2++){
+          if(w.star)vals.push(1);
+          else{var vv=ev(w.args[0],rows[sorted[q2]],null);if(vv!=null)vals.push(vv)}
+        }
+        val=aggregateVals(f,vals,w.distinct);
+      }
+      out[sorted[j]]=val;
+    }
+  });
+  return out;
+}
+
+function runQ(q,env){
+  var src;
+  if(q.from.sub)src=runQuery(q.from.sub,env);
+  else{
+    var nm=q.from.name;
+    if(!Object.prototype.hasOwnProperty.call(env,nm))throw syn("テーブル「"+nm+"」が見つかりません(使えるのは "+TABLE+" と WITH で作った名前です)");
+    src=env[nm];
+  }
+  var names=src.names;
+  var rows=src.rows.map(function(r){return Object.assign({},r)});
+  var items=[];
+  q.items.forEach(function(it){
+    if(it.star)names.forEach(function(c){items.push({e:{op:"COL",name:c},name:c})});
+    else items.push({e:it.e,name:it.alias||(it.e.op==="COL"?it.e.name:null)});
+  });
+  items.forEach(function(it,i){if(!it.name)it.name="col"+(i+1)});
+  var seen={};
+  items.forEach(function(it){if(seen[it.name]){it.name=it.name+"_"+seen[it.name]++}else seen[it.name]=1});
+  var orders=q.order.map(function(o){
+    var e=o.e;
+    if(e.op==="LIT"&&typeof e.v==="number"&&e.v%1===0){
+      if(e.v<1||e.v>items.length)throw new Error("ORDER BY の番号が範囲外です: "+e.v);
+      return {pos:e.v-1,desc:o.desc};
+    }
+    if(e.op==="COL"&&names.indexOf(e.name)<0){
+      var idx=-1;items.forEach(function(it,j){if(it.name===e.name&&idx<0)idx=j});
+      if(idx<0)throw new Error("列が見つかりません: "+e.name);
+      return {pos:idx,desc:o.desc};
+    }
+    return {e:e,desc:o.desc};
+  });
+  items.forEach(function(it){checkCols(it.e,names)});
+  if(q.where){checkCols(q.where,names);if(hasAgg(q.where))throw new Error("WHERE では集計関数は使えません");if(hasWin(q.where))throw new Error("WHERE ではウィンドウ関数は使えません")}
+  q.group.forEach(function(g){checkCols(g,names)});
+  if(q.having)checkCols(q.having,names);
+  orders.forEach(function(o){if(o.e)checkCols(o.e,names)});
+  var isAgg=q.group.length>0||q.having!==null||items.some(function(it){return hasAgg(it.e)})||orders.some(function(o){return o.e&&hasAgg(o.e)});
+  var allE=items.map(function(it){return it.e}).concat(orders.filter(function(o){return o.e}).map(function(o){return o.e}));
+  var hasW=allE.some(hasWin);
+  if(hasW&&isAgg)throw uns("集計と同時に使うウィンドウ関数");
+  var src2=rows.filter(function(r){return !q.where||ev(q.where,r,null)===true});
+  if(hasW){
+    var wins=[];allE.forEach(function(e){collectWins(e,wins)});
+    src2.forEach(function(r){r.__w={}});
+    var done={};
+    wins.forEach(function(w){
+      var kk=key(w);if(done[kk])return;done[kk]=1;
+      var vals=computeWin(w,src2);
+      src2.forEach(function(r,i){r.__w[kk]=vals[i]});
+    });
+  }
+  var recs=[];
+  if(!isAgg){
+    src2.forEach(function(r){recs.push({out:items.map(function(it){return ev(it.e,r,null)}),row:r})});
+  }else{
+    var groups=[];
+    if(q.group.length){
+      var map={};
+      src2.forEach(function(r){
+        var gk=JSON.stringify(q.group.map(function(g){return ev(g,r,null)}));
+        if(!map[gk]){map[gk]=[];groups.push(map[gk])}
+        map[gk].push(r);
+      });
+    }else groups.push(src2);
+    var keys={};q.group.forEach(function(g){keys[key(g)]=1});
+    groups.forEach(function(grows){
+      var G={rows:grows,keys:keys};
+      if(q.having&&ev(q.having,null,G)!==true)return;
+      recs.push({out:items.map(function(it){return ev(it.e,null,G)}),G:G});
+    });
+  }
+  if(q.distinct){
+    var sd={};
+    recs=recs.filter(function(rc){var k3=JSON.stringify(rc.out);if(sd[k3])return false;sd[k3]=1;return true});
+  }
+  recs.forEach(function(rc,idx){
+    rc.idx=idx;
+    rc.sk=orders.map(function(o){
+      if(o.pos!==undefined)return rc.out[o.pos];
+      return rc.G?ev(o.e,null,rc.G):ev(o.e,rc.row,null);
+    });
+  });
+  if(orders.length){
+    recs.sort(function(a,b){
+      for(var j=0;j<orders.length;j++){
+        var x=a.sk[j],y=b.sk[j];
+        if(x==null&&y==null)continue;
+        if(x==null)return 1;
+        if(y==null)return -1;
+        var c=cmpVal(x,y);
+        if(c)return orders[j].desc?-c:c;
+      }
+      return a.idx-b.idx;
+    });
+  }
+  var end=q.limit===null?undefined:q.offset+q.limit;
+  recs=recs.slice(q.offset,end);
+  var outNames=items.map(function(it){return it.name});
+  return {names:outNames,rows:recs.map(function(rc){var o={};items.forEach(function(it,j){o[it.name]=rc.out[j]});return o})};
+}
+function runQuery(q,env){
+  var prev=CUR;CUR=env;
+  try{return runQ(q,env)}finally{CUR=prev}
+}
+function run(sql,table){
+  var pq=parseQuery(sql);
+  var env={};
+  env[TABLE]={names:COLS.slice(),rows:table};
+  pq.ctes.forEach(function(c){env[c.name]=runQuery(c.q,env)});
+  return runQuery(pq.main,env).rows;
+}
+return {run:run,COLS:COLS};
+})();
+
+
+function freshTable(){}
+function setupDB(){}
+function runOn(sql){
+  return MiniSQL.run(sql.replace(/;\s*$/,""),SAMPLE);
+}
+function runSQL(){
+  var raw=$("sql").value,box=$("runOut");
+  box.style.display="";
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+  if(!raw.trim()){box.innerHTML="SQLが空です。";return}
+  try{
+    box.innerHTML=renderTable(runOn(raw));
+  }catch(e){
+    box.innerHTML=e.unsupported
+      ?'<span class="ng">未対応の書き方です</span><br><span class="small">'+esc(e.message)+'</span>'
+      :'<span class="ng">エラー: '+esc(e.message||String(e))+'</span>';
+  }
+}
+
+var hintLv={};
+function pad2(n){return (n<10?"0":"")+n}
+function todayKey(){var d=new Date();return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())}
+function stageCounts(){
+  var names=["初心者","中級","上級"],out=[];
+  names.forEach(function(nm,k){var n=0;for(var i=k*100;i<k*100+100;i++){if(S[i]&&S[i].ok)n++}out.push(nm+" "+n+"/100")});
+  $("stageCnt").textContent=out.join("　");
+}
+function logLine(){
+  var L=S.__log||{},t=L[todayKey()]||0;
+  var days=Object.keys(L).sort().slice(-7).map(function(d){return d.slice(5)+": "+L[d]+"問"}).join("　");
+  $("logLine").textContent="今日の正解: "+t+"問"+(days?"　／　最近の記録　"+days:"");
+}
+function updCount(){
+  var n=0;for(var k in S){if(S[k]&&S[k].ok)n++}
+  ok=n;$("cnt").textContent=n;$("bar").style.width=(n/3)+"%";
+  stageCounts();logLine();
+}
+function judgeText(i){
+  try{runOn(D[i][2]);return "判定: 結果で採点(練習用データの結果が同じなら正解)"}
+  catch(e){return e.unsupported?"判定: 書き方で採点(このエンジンでは未対応の書き方のため)":"判定: 書き方で採点"}
+}
+var __show=show;
+show=function(i){__show(i);hintLv[cur]=0;$("judge").textContent=judgeText(cur)};
+var __grade2=$("grade").onclick;
+$("grade").onclick=function(e){
+  __grade2.call(this,e);
+  if(S[cur]&&S[cur].ok&&!S[cur].counted){
+    S[cur].counted=true;
+    S.__log=S.__log||{};var tk=todayKey();S.__log[tk]=(S.__log[tk]||0)+1;
+    save();
+  }
+  updCount();
+};
+$("hint").onclick=function(){
+  var lv=Math.min((hintLv[cur]||0)+1,3);hintLv[cur]=lv;
+  var q=D[cur];
+  if(lv===1){$("res").textContent="ヒント1: "+(q[1]||"特になし。問題文の条件を一つずつ確かめてみてください。")}
+  else if(lv===2){
+    var cl=(q[2].match(/\b(SELECT|FROM|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|WITH|OVER)\b/g)||[]).filter(function(x,k,a){return a.indexOf(x)===k});
+    $("res").textContent="ヒント2: 使う句は "+cl.join("、")+" です。順番に書いてみてください。"
+  }
+  else{$("res").innerHTML="ヒント3(解答例):<pre>"+esc(q[2])+"</pre>"}
+};
+function formatSQL(s){
+  var parts=s.split(/('[^']*')/);
+  for(var i=0;i<parts.length;i+=2){
+    parts[i]=parts[i].replace(/\s+/g," ").replace(/\b(select|distinct|from|where|group by|having|order by|limit|offset|and|or|not|in|is|null|between|like|case|when|then|else|end|as|desc|asc|cast|date|with|over|partition by|rows|between)\b/gi,function(w){return w.toUpperCase()});
+  }
+  var t=parts.join("");
+  t=t.replace(/\s*\b(FROM|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|OFFSET)\b\s*/g,function(m,k){return "\n"+k+" "});
+  return t.replace(/\s+\n/g,"\n").replace(/\n\s+/g,"\n").trim();
+}
+$("fmt").onclick=function(){
+  var v=formatSQL($("sql").value);
+  $("sql").value=v;S[cur]=S[cur]||{};S[cur].sql=v;save();
+};
+$("goBtn").onclick=function(){
+  var n=parseInt($("goNum").value,10);
+  if(!n||n<1||n>D.length){$("goNum").value="";return}
+  if(revOn&&!(S[n-1]&&S[n-1].miss&&!S[n-1].ok)){revOn=false;$("revOnTog").checked=false}
+  show(n-1);fillSel();
+};
+var gOpen=true;
+$("gToggle").onclick=function(){gOpen=!gOpen;$("layoutMain").classList.toggle("gclosed",!gOpen);this.textContent=gOpen?"用語集を閉じる":"用語集を開く"};
+show(0);
+</script>
+</body>
+</html>
